@@ -34,7 +34,7 @@ export function NavMain({
 }) {
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>AI-Powered Platform</SidebarGroupLabel>
+
             <SidebarMenu>
                 {items.map((item) =>
                     item.items && item.items.length > 0 ? (

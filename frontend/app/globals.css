@@ -130,3 +130,8 @@
     @apply font-sans;
   }
 }
+
+[data-nextjs-dialog-overlay],
+[data-nextjs-toast] {
+  display: none !important;
+}

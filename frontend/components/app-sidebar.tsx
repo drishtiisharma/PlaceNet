@@ -1,5 +1,5 @@
 "use client"
-
+import Image from "next/image"
 import * as React from "react"
 import {
     LayoutDashboard,
@@ -107,14 +107,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar collapsible="icon" {...props}>
 
+            <SidebarHeader className="p-3">
+                <Image
+                    src="/logo.png"
+                    alt="PlaceNet AI"
+                    width={500}
+                    height={100}
+                    priority
+                />
+            </SidebarHeader>
+
             <SidebarContent>
                 <NavMain items={data.navMain} />
-
             </SidebarContent>
-            <SidebarFooter>
-                <NavUser user={data.user} />
-            </SidebarFooter>
-            <SidebarRail />
         </Sidebar>
     )
 }
