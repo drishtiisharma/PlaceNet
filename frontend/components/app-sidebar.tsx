@@ -70,7 +70,7 @@ const data = {
             items: [
                 {
                     title: "Upload Resumes",
-                    url: "#",
+                    url: "/resume-upload",
                 },
                 {
                     title: "Resume Library",
