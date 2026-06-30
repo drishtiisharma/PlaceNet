@@ -11,6 +11,11 @@ import {
     useDropzone,
 } from "@/components/ui/dropzone";
 import { CloudUploadIcon, Trash2Icon } from "lucide-react";
+import {
+    FileText,
+    FileSpreadsheet,
+    FileImage,
+} from "lucide-react";
 
 export function ResumeUpload() {
     const dropzone = useDropzone({
@@ -23,10 +28,11 @@ export function ResumeUpload() {
         },
         validation: {
             accept: {
-                "image/*": [".png", ".jpg", ".jpeg"],
+                "application/pdf": [".pdf"],
+                "application/msword": [".doc"],
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
             },
             maxSize: 10 * 1024 * 1024,
-            maxFiles: 10,
         },
     });
 
@@ -34,17 +40,12 @@ export function ResumeUpload() {
         <div className="not-prose flex flex-col gap-4">
             <Dropzone {...dropzone}>
                 <div>
-                    <div className="flex justify-between">
-                        <DropzoneDescription>
-                            Please select up to 10 images
-                        </DropzoneDescription>
-                        <DropzoneMessage />
-                    </div>
+
                     <DropZoneArea>
                         <DropzoneTrigger className="flex flex-col items-center gap-4 bg-transparent p-10 text-center text-sm">
                             <CloudUploadIcon className="size-8" />
                             <div>
-                                <p className="font-semibold">Upload images</p>
+                                <p className="font-semibold">Upload Resumes</p>
                                 <p className="text-sm text-muted-foreground">
                                     Click here or drag and drop to upload
                                 </p>
@@ -63,14 +64,28 @@ export function ResumeUpload() {
                             {file.status === "pending" && (
                                 <div className="aspect-video animate-pulse bg-black/20" />
                             )}
+
                             {file.status === "success" && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                    src={file.result}
-                                    alt={`uploaded-${file.fileName}`}
-                                    className="aspect-video object-cover"
-                                />
+                                <>
+                                    {(() => {
+                                        const type = file.file.type;
+
+                                        return (
+                                            <div className="flex aspect-video items-center justify-center bg-muted">
+                                                {type === "application/pdf" ? (
+                                                    <FileText className="h-16 w-16 text-red-500" />
+                                                ) : type ===
+                                                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
+                                                    <FileText className="h-16 w-16 text-blue-500" />
+                                                ) : (
+                                                    <FileImage className="h-16 w-16 text-gray-500" />
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
+                                </>
                             )}
+
                             <div className="flex items-center justify-between p-2 pl-4">
                                 <div className="min-w-0">
                                     <p className="truncate text-sm">{file.fileName}</p>
@@ -78,6 +93,7 @@ export function ResumeUpload() {
                                         {(file.file.size / (1024 * 1024)).toFixed(2)} MB
                                     </p>
                                 </div>
+
                                 <DropzoneRemoveFile
                                     variant="ghost"
                                     className="shrink-0 hover:outline"

@@ -7,7 +7,7 @@ import {
     FileText,
     Bot,
     ChartColumn,
-    BriefcaseBusiness,
+    UserRoundSearch,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -34,13 +34,6 @@ const data = {
             title: "Dashboard",
             url: "#",
             icon: LayoutDashboard,
-            isActive: true,
-            items: [
-                {
-                    title: "Overview",
-                    url: "#",
-                },
-            ],
         },
 
         {
@@ -78,7 +71,16 @@ const data = {
                 },
             ],
         },
-
+        {
+            title: "AI Chat",
+            url: "#",
+            icon: Bot,
+        },
+        {
+            title: "Hiring Profile",
+            url: "#",
+            icon: UserRoundSearch,
+        },
         {
             title: "Reports",
             url: "#",
@@ -93,11 +95,6 @@ const data = {
                     url: "#",
                 },
             ],
-        },
-        {
-            title: "AI Chat",
-            url: "#",
-            icon: Bot,
         },
 
     ]
