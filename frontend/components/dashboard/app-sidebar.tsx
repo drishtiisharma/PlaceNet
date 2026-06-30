@@ -10,8 +10,8 @@ import {
     UserRoundSearch,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/dashboard/nav-main"
+import { NavUser } from "@/components/dashboard/nav-user"
 import {
     Sidebar,
     SidebarContent,
@@ -74,7 +74,7 @@ const data = {
         {
             title: "AI Chat",
             url: "#",
-            icon: Bot,
+            icon: Bot
         },
         {
             title: "Hiring Profile",

@@ -1,4 +1,4 @@
-import { ResumeUpload } from "@/components/resume-upload";
+import { ResumeUpload } from "@/components/resume-upload/resume-upload";
 
 export default function ResumeUploadPage() {
     return (

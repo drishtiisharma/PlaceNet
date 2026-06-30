@@ -20,7 +20,7 @@ export function ResumeSearch() {
             </div>
 
 
-            <Button className="h-11 bg-orange-600 hover:bg-blue-600 text-white">
+            <Button className="h-8 mb-2 bg-orange-600 hover:bg-blue-600 text-white">
                 Search Resumes
             </Button>
         </div>

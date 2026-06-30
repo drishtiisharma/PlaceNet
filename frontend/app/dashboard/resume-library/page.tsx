@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ResumeSearch } from "./components/ResumeSearch";
-import { ResumeTable } from "./components/ResumeTable";
+import { ResumeSearch } from "../../../components/resume-library/ResumeSearch";
+import { ResumeTable } from "../../../components/resume-library/ResumeTable";
 
 export default function ResumeLibraryPage() {
     return (
@@ -8,7 +8,6 @@ export default function ResumeLibraryPage() {
             <h1 className="mb-10 text-3xl font-bold">
                 Resume Library
             </h1>
-
             <Card>
                 <CardHeader>
 
