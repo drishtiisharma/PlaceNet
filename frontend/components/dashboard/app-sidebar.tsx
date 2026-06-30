@@ -73,7 +73,7 @@ const data = {
         },
         {
             title: "AI Chat",
-            url: "#",
+            url: "/dashboard/ai-chat",
             icon: Bot
         },
         {
