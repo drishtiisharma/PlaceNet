@@ -82,19 +82,9 @@ const data = {
             icon: UserRoundSearch,
         },
         {
-            title: "Reports",
-            url: "#",
+            title: "Analytics",
+            url: "/dashboard/analytics",
             icon: ChartColumn,
-            items: [
-                {
-                    title: "Analytics",
-                    url: "#",
-                },
-                {
-                    title: "Export Reports",
-                    url: "#",
-                },
-            ],
         },
 
     ]
