@@ -40,20 +40,6 @@ const data = {
             title: "Candidates",
             url: "#",
             icon: Users,
-            items: [
-                {
-                    title: "All Candidates",
-                    url: "#",
-                },
-                {
-                    title: "Shortlisted",
-                    url: "#",
-                },
-                {
-                    title: "Rejected",
-                    url: "#",
-                },
-            ],
         },
 
         {
