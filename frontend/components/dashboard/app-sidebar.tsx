@@ -78,7 +78,7 @@ const data = {
         },
         {
             title: "Hiring Profile",
-            url: "#",
+            url: "/dashboard/hiring-profile",
             icon: UserRoundSearch,
         },
         {
