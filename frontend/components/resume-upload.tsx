@@ -17,6 +17,11 @@ import {
     FileImage,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { CircleFadingArrowUpIcon } from "lucide-react";
+
+
+
 export function ResumeUpload() {
     const dropzone = useDropzone({
         onDropFile: async (file: File) => {
@@ -38,6 +43,12 @@ export function ResumeUpload() {
 
     return (
         <div className="not-prose flex flex-col gap-4">
+            <div className="mb-6 flex justify-end">
+                <Button className="h-11 bg-orange-600 hover:bg-blue-600 text-white">
+                    <CircleFadingArrowUpIcon className="mr-1 h-4 w-4" />
+                    Process Resumes
+                </Button>
+            </div>
             <Dropzone {...dropzone}>
                 <div>
 

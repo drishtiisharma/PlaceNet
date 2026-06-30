@@ -67,7 +67,7 @@ const data = {
                 },
                 {
                     title: "Resume Library",
-                    url: "#",
+                    url: "/dashboard/resume-library",
                 },
             ],
         },
