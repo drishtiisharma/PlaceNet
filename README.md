@@ -121,8 +121,7 @@
 └── README.md
 ```
 
-
-## ⬇ Installation
+# Installation
 
 ```bash
 git clone -b testing2 https://github.com/drishtiisharma/PlaceNet.git
@@ -137,6 +136,6 @@ Open your browser and visit:
 http://localhost:3000
 ```
 
-## 📌 Status
+# Status
 
 This project is actively being developed, with additional features and improvements planned.
