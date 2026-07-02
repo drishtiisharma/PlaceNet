@@ -48,7 +48,7 @@ export function AIAutofillPanel() {
             <UploadArea />
 
             <div className="mt-6 flex justify-center">
-                <Button className="bg-orange-600 hover:bg-orange-700">
+                <Button className="h-11 bg-orange-600 hover:bg-blue-600 text-white">
                     AutoFill Details
                 </Button>
             </div>

@@ -19,7 +19,7 @@ export function RankCandidatesPopover() {
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button>
+                <Button className="bg-orange-600 hover:bg-blue-600 text-white">
                     <Sparkles className="mr-2 h-4 w-4" />
                     Rank Candidates
                 </Button>

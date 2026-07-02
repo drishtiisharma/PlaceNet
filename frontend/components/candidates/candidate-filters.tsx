@@ -10,7 +10,7 @@ import {
 
 export function CandidateFilters() {
     return (
-        <div className="flex flex-wrap items-center gap-2">
+        <>
 
             <Select>
                 <SelectTrigger className="w-[160px]">
@@ -62,6 +62,6 @@ export function CandidateFilters() {
                 </SelectContent>
             </Select>
 
-        </div>
+        </>
     );
 }

@@ -14,7 +14,7 @@ export function CandidateSearch() {
                 className="flex-1"
             />
 
-            <Button>
+            <Button className="bg-orange-600 hover:bg-blue-600 text-white">
                 <Search className="mr-2 h-4 w-4" />
                 Search
             </Button>

@@ -1,9 +1,9 @@
 import { CandidatesHeader } from "@/components/candidates/candidates-header";
-import { CandidateSearch } from "@/components/candidates/candidate-search";
+import { CandidateSearch } from "@/components/candidates/candidates-search";
 import { CandidateFilters } from "@/components/candidates/candidate-filters";
 import { RankCandidatesPopover } from "@/components/candidates/rank-candidates-popover";
 import { CandidatesTable } from "@/components/candidates/candidates-table";
-import { CandidatesPagination } from "@/components/candidates/candidates-pagination";
+import { CandidatesPagination } from "@/components/candidates/candidate-pagination";
 
 export default function CandidatesPage() {
     return (
@@ -17,9 +17,9 @@ export default function CandidatesPage() {
 
                     <CandidateSearch />
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <RankCandidatesPopover />
+                    <div className="flex items-center gap-2">
                         <CandidateFilters />
+                        <RankCandidatesPopover />
                     </div>
 
                 </div>

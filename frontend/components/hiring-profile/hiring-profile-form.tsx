@@ -47,7 +47,7 @@ export function HiringProfileForm() {
                 </Field>
 
                 <div className="mt-6 flex justify-end">
-                    <Button className="bg-orange-600 hover:bg-orange-700">
+                    <Button className="h-11 bg-orange-600 hover:bg-blue-600 text-white">
                         Save JD
                     </Button>
                 </div>
