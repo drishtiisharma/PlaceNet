@@ -55,7 +55,7 @@ export function RankCandidatesPopover() {
                         />
                     </Field>
 
-                    <Button className="w-full">
+                    <Button className="w-full bg-orange-600 hover:bg-blue-600 text-white">
                         Generate Ranking
                     </Button>
 
