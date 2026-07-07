@@ -1,4 +1,5 @@
 "use client";
+const BACKEND_URL = "http://127.0.0.1:8000";
 import {
     Dropzone,
     DropZoneArea,
@@ -41,10 +42,57 @@ export function ResumeUpload() {
         },
     });
 
+    const handleProcessResumes = async () => {
+        try {
+            const formData = new FormData();
+
+            // Collect all uploaded files
+            const uploadedFiles = dropzone.fileStatuses
+                .filter((file) => file.status === "success")
+                .map((file) => file.file);
+
+            if (uploadedFiles.length === 0) {
+                alert("Please upload at least one resume.");
+                return;
+            }
+
+            uploadedFiles.forEach((file) => {
+                formData.append("files", file);
+            });
+
+            const response = await fetch(
+                `${BACKEND_URL}/resume/process`,
+                {
+                    method: "POST",
+                    body: formData,
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to process resumes.");
+            }
+
+            const result = await response.json();
+
+            console.log(result);
+
+            alert(
+                `${result.processed_resumes} resume(s) processed successfully!`
+            );
+
+        } catch (error) {
+            console.error(error);
+            alert("Something went wrong while processing resumes.");
+        }
+    };
+
     return (
         <div className="not-prose flex flex-col gap-4">
             <div className="mb-6 flex justify-end">
-                <Button className="h-11 bg-orange-600 hover:bg-blue-600 text-white">
+                <Button
+                    onClick={handleProcessResumes}
+                    className="h-11 bg-orange-600 hover:bg-blue-600 text-white"
+                >
                     <CircleFadingArrowUpIcon className="mr-1 h-4 w-4" />
                     Process Resumes
                 </Button>
