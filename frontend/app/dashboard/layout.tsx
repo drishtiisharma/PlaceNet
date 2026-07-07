@@ -1,9 +1,4 @@
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import {
-    SidebarInset,
-    SidebarProvider,
-    SidebarTrigger,
-} from "@/components/ui/sidebar";
+import Navbar from "@/components/common/navbar";
 
 export default function DashboardLayout({
     children,
@@ -11,18 +6,12 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <SidebarProvider>
-            <AppSidebar />
+        <>
+            <Navbar />
 
-            <SidebarInset>
-                <header className="flex h-16 items-center px-4">
-                    <SidebarTrigger />
-                </header>
-
-                <main className="flex flex-1 flex-col gap-4 p-4">
-                    {children}
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
+            <main className="pt-4">
+                {children}
+            </main>
+        </>
     );
 }

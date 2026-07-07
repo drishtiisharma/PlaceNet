@@ -1,9 +1,14 @@
 "use client";
+import {
+    Sheet,
+    SheetTrigger,
+} from "@/components/ui/sheet";
 
 import Link from "next/link";
 import Image from "next/image";
 import { Menu } from "lucide-react";
-
+import AppSheet from "./app-sheet";
+import { landingNav } from "./navigation";
 import { Button } from "@/components/ui/button";
 import {
     NavigationMenu,
@@ -12,41 +17,34 @@ import {
     NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 
-const navItems = [
-    {
-        title: "Features",
-        href: "#features",
-    },
-    {
-        title: "AI Search",
-        href: "#ai-search",
-    },
-    {
-        title: "Analytics",
-        href: "#analytics",
-    },
-    {
-        title: "Resources",
-        href: "#faq",
-    },
-];
+
 
 export default function LandingNavbar() {
     return (
         <header className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-md">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+            <div className="flex h-16 items-center justify-between px-3">
 
                 {/* Left */}
                 <div className="flex items-center gap-3">
 
                     {/* Sidebar Button (currently visual only) */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-lg"
-                    >
-                        <Menu className="h-5 w-5" />
-                    </Button>
+                    <Sheet>
+
+                        <SheetTrigger asChild>
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-lg"
+                            >
+                                <Menu className="h-5 w-5" />
+                            </Button>
+
+                        </SheetTrigger>
+
+                        <AppSheet />
+
+                    </Sheet>
 
                     {/* Logo */}
                     <Link
@@ -56,8 +54,8 @@ export default function LandingNavbar() {
                         <Image
                             src="/logo.png"
                             alt="PlaceNet AI"
-                            width={165}
-                            height={40}
+                            width={210}
+                            height={52}
                             priority
                         />
                     </Link>
@@ -69,7 +67,7 @@ export default function LandingNavbar() {
 
                     <NavigationMenuList>
 
-                        {navItems.map((item) => (
+                        {landingNav.map((item) => (
                             <NavigationMenuItem key={item.title}>
 
                                 <NavigationMenuLink asChild>

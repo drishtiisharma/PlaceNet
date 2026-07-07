@@ -1,4 +1,4 @@
-import LandingNavbar from "@/components/landing/navbar";
+import Navbar from "@/components/common/navbar";
 import Hero from "@/components/landing/hero";
 import Features from "@/components/landing/features";
 import Workflow from "@/components/landing/workflow";
@@ -9,7 +9,7 @@ import Footer from "@/components/landing/footer";
 export default function Home() {
   return (
     <>
-      <LandingNavbar />
+      <Navbar />
       <Hero />
       <Workflow />
       <AIShowcase />
