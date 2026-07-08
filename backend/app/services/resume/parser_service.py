@@ -1,17 +1,20 @@
 from pathlib import Path
 from io import BytesIO
+
 import fitz
 from docx import Document
+
 from app.models.parsed_resume import ParsedResume
 
 
 class ParserService:
 
     @staticmethod
-    def parse(file_bytes: bytes, filename: str) -> ParsedResume:
-        """
-        Parsing a PDF or DOCX resume and returning a ParsedResume object.
-        """
+    def parse(
+        file_bytes: bytes,
+        filename: str
+    ) -> ParsedResume:
+
         extension = Path(filename).suffix.lower()
 
         if extension == ".pdf":
@@ -25,6 +28,13 @@ class ParserService:
                 f"Unsupported file type: {extension}"
             )
 
+        text = text.strip()
+
+        if not text:
+            raise ValueError(
+                "No readable text found in resume."
+            )
+
         candidate_name = ParserService._extract_candidate_name(text)
 
         return ParsedResume(
@@ -34,45 +44,52 @@ class ParserService:
 
     @staticmethod
     def _parse_pdf(file_bytes: bytes) -> str:
-        """
-        Extracting text from a PDF.
-        """
 
         pdf = fitz.open(
             stream=file_bytes,
             filetype="pdf"
         )
 
-        text = ""
+        pages = []
 
         for page in pdf:
-            text += page.get_text()
+            pages.append(page.get_text())
 
         pdf.close()
 
-        return text
+        return "\n".join(pages)
 
     @staticmethod
     def _parse_docx(file_bytes: bytes) -> str:
-        """
-        Extracting text from a DOCX.
-        """
 
         document = Document(BytesIO(file_bytes))
 
-        text = "\n".join(
-            paragraph.text
-            for paragraph in document.paragraphs
-        )
+        text = []
 
-        return text
+        # Paragraphs
+        for paragraph in document.paragraphs:
+
+            value = paragraph.text.strip()
+
+            if value:
+                text.append(value)
+
+        # Tables
+        for table in document.tables:
+
+            for row in table.rows:
+
+                for cell in row.cells:
+
+                    value = cell.text.strip()
+
+                    if value:
+                        text.append(value)
+
+        return "\n".join(text)
 
     @staticmethod
     def _extract_candidate_name(text: str) -> str:
-        """
-        [Temporary implementation]
-        Assumes the first non-empty line is the candidate's name.
-        """
 
         for line in text.splitlines():
 

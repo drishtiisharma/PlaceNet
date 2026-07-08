@@ -17,7 +17,15 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ResumeActions() {
+type ResumeActionsProps = {
+    resumeId: string;
+};
+
+const BACKEND_URL = "http://localhost:8000";
+
+export function ResumeActions({
+    resumeId,
+}: ResumeActionsProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -27,12 +35,26 @@ export function ResumeActions() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-                <DropdownMenuItem>
+
+                <DropdownMenuItem
+                    onClick={() =>
+                        window.open(
+                            `${BACKEND_URL}/resume/view/${resumeId}`,
+                            "_blank"
+                        )
+                    }
+                >
                     <Eye className="mr-2 h-4 w-4" />
                     View
                 </DropdownMenuItem>
 
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                    onClick={() =>
+                        window.open(
+                            `${BACKEND_URL}/resume/download/${resumeId}`
+                        )
+                    }
+                >
                     <Download className="mr-2 h-4 w-4" />
                     Download
                 </DropdownMenuItem>
@@ -44,10 +66,23 @@ export function ResumeActions() {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem variant="destructive">
+                <DropdownMenuItem
+                    variant="destructive"
+                    onClick={async () => {
+                        await fetch(
+                            `${BACKEND_URL}/resume/${resumeId}`,
+                            {
+                                method: "DELETE",
+                            }
+                        );
+
+                        window.location.reload();
+                    }}
+                >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                 </DropdownMenuItem>
+
             </DropdownMenuContent>
         </DropdownMenu>
     );

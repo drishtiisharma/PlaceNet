@@ -1,5 +1,4 @@
 from app.models.resume_chunk import ResumeChunk
-
 import chromadb
 from chromadb.config import Settings
 
@@ -60,13 +59,76 @@ class VectorService:
             })
 
         VectorService.collection.add(
-
             ids=ids,
-
             documents=documents,
-
-            embeddings=embeddings.tolist(),
-
+            embeddings=(
+    embeddings.tolist()
+    if hasattr(embeddings, "tolist")
+    else embeddings
+),
             metadatas=metadatas
+        )
 
+    # -----FOR RESUME LIBRARY-----
+
+    @staticmethod
+    def get_all_resumes():
+        """
+        Returns one entry per resume.
+        """
+        results = VectorService.collection.get(
+            include=["metadatas"]
+        )
+        resumes = {}
+        for metadata in results["metadatas"]:
+            resume_id = metadata["resume_id"]
+            if resume_id not in resumes:
+                resumes[resume_id] = {
+                    "resume_id": resume_id,
+                    "candidate_name": metadata["candidate_name"],
+                    "resume_path": metadata["resume_path"],
+                    "original_filename": metadata["original_filename"]
+                }
+        return list(resumes.values())
+
+    @staticmethod
+    def get_resume(resume_id: str):
+        """
+        Returns metadata for a single resume.
+        """
+        results = VectorService.collection.get(
+            where={
+                "resume_id": resume_id
+            },
+            include=["metadatas"]
+        )
+        if not results["metadatas"]:
+            return None
+        metadata = results["metadatas"][0]
+        return {
+            "resume_id": metadata["resume_id"],
+            "candidate_name": metadata["candidate_name"],
+            "resume_path": metadata["resume_path"],
+            "original_filename": metadata["original_filename"]
+        }
+
+    @staticmethod
+    def delete_resume(resume_id: str):
+        """
+        Deletes every chunk belonging to one resume.
+        """
+        VectorService.collection.delete(
+            where={
+                "resume_id": resume_id
+            }
+        )
+
+    @staticmethod
+    def search(query_embedding, top_k=10):
+        """
+        Semantic search.
+        """
+        return VectorService.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=top_k
         )

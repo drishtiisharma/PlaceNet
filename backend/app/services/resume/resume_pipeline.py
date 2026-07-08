@@ -57,8 +57,18 @@ class ResumePipeline:
             # Create semantic chunks
             chunks = ChunkService.create_chunks(parsed_resume)
 
+            if not chunks:
+                raise ValueError(
+                    f"No text could be extracted from {file.filename}"
+                )
+
             # Generate embeddings
             embeddings = EmbeddingService.generate_embeddings(chunks)
+
+            if len(embeddings) == 0:
+                raise ValueError(
+                    f"Failed to generate embeddings for {file.filename}"
+                )
 
             # Store everything in ChromaDB
             VectorService.store(
