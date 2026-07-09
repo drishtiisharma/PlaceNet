@@ -139,3 +139,21 @@
 html {
   scroll-behavior: smooth;
 }
+
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow: -moz-scrollbars-none;
+}

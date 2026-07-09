@@ -8,7 +8,7 @@ export function ChatDropdown() {
     return (
         <Button
             variant="ghost"
-            className="mb-20 gap-2 text-lg font-semibold"
+            className="gap-2 text-lg font-semibold"
         >
             Chats
 

@@ -12,7 +12,7 @@ export function EmptyState() {
                 Ask PlaceNet AI anything
             </h1>
 
-            <p className="mb-30 max-w-md text-muted-foreground">
+            <p className="max-w-md text-muted-foreground">
                 Search resumes, analyze candidates,
                 generate interview questions, and more.
             </p>

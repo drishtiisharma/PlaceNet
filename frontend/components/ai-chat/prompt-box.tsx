@@ -7,8 +7,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { AttachmentButton } from "./attachment-button";
 import { SendButton } from "./send-button";
 import { UploadedFile } from "./uploaded-file";
+import { Message } from "./chat-messages";
 
-export function PromptBox() {
+type PromptBoxProps = {
+    messages: Message[];
+    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+};
+
+export function PromptBox({
+    messages,
+    setMessages,
+}: PromptBoxProps) {
     const [message, setMessage] = useState("");
     const [file, setFile] = useState<File | null>(null);
 
@@ -24,8 +33,53 @@ export function PromptBox() {
         }
     }
 
+    async function handleSend() {
+        if (!message.trim()) return;
+
+        const userMessage: Message = {
+            role: "user",
+            content: message,
+        };
+
+        setMessages((prev) => [...prev, userMessage]);
+
+        const currentMessage = message;
+        setMessage("");
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    message: currentMessage,
+                }),
+            });
+
+            const data = await response.json();
+
+            const aiMessage: Message = {
+                role: "assistant",
+                content: data.reply,
+            };
+
+            setMessages((prev) => [...prev, aiMessage]);
+        } catch (error) {
+            console.error(error);
+
+            setMessages((prev) => [
+                ...prev,
+                {
+                    role: "assistant",
+                    content: "Sorry, I couldn't connect to the AI.",
+                },
+            ]);
+        }
+    }
+
     return (
-        <div className="w-full max-w-3xl rounded-3xl border bg-background p-4 shadow-sm">
+        <div className="w-full max-w-3xl rounded-3xl border bg-background px-4 py-3 shadow-sm">
 
             {file && (
                 <div className="mb-3">
@@ -36,21 +90,42 @@ export function PromptBox() {
                 </div>
             )}
 
-            <Textarea
-                placeholder="Ask PlaceNet AI anything..."
-                className="min-h-[30px] resize-none border-0 shadow-none focus-visible:ring-0"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-            />
-
-            <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-end gap-3">
 
                 <AttachmentButton
                     onClick={() => fileInputRef.current?.click()}
                 />
 
+                <Textarea
+                    placeholder="Ask PlaceNet AI anything..."
+                    rows={1}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onInput={(e) => {
+                        const target = e.currentTarget;
+                        target.style.height = "0px";
+                        target.style.height = `${target.scrollHeight}px`;
+                    }}
+                    className="
+                        flex-1
+                        min-h-0
+                        max-h-40
+                        resize-none
+                        overflow-y-auto
+                        border-0
+                        bg-transparent
+                        px-0
+                        py-2
+                        text-base
+                        leading-6
+                        shadow-none
+                        focus-visible:ring-0
+                    "
+                />
+
                 <SendButton
                     disabled={!message.trim()}
+                    onClick={handleSend}
                 />
 
             </div>

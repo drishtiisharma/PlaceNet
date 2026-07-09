@@ -1,0 +1,17 @@
+# Environment variables
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Chroma database 
+backend/chroma_db/
+
+# Node
+node_modules/
+.next/
+
+# Python virtual environments
+venv/
+.venv/
