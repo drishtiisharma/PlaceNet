@@ -27,9 +27,11 @@ async def process_resumes(
         return await ResumePipeline.process_resumes(files)
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
-            detail=str(e)
+            detail=f"Backend Error: {str(e)}"
         )
 
 

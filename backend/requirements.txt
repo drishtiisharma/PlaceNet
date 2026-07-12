@@ -16,3 +16,9 @@ chromadb
 langchain-text-splitters
 
 numpy
+sqlalchemy
+docx2pdf
+
+# AI and Environment
+groq
+python-dotenv

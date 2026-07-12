@@ -30,6 +30,7 @@ export default function LandingSheet() {
                     alt="PlaceNet AI"
                     width={190}
                     height={50}
+                    style={{ width: "auto", height: "auto" }}
                     priority
                 />
 

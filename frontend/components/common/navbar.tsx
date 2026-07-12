@@ -56,6 +56,7 @@ export default function LandingNavbar() {
                             alt="PlaceNet AI"
                             width={210}
                             height={52}
+                            style={{ width: "auto", height: "auto" }}
                             priority
                         />
                     </Link>

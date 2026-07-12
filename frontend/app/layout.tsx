@@ -11,16 +11,20 @@ export const metadata: Metadata = {
   description: "AI Powered Placement Platform",
 };
 
+import { ResumeViewerWrapper } from "@/components/resume-viewer/resume-viewer-wrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", inter.variable)}>
-      <body>
+    <html lang="en" className={cn("font-sans", inter.variable)} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <TooltipProvider>
-          {children}
+          <ResumeViewerWrapper>
+            {children}
+          </ResumeViewerWrapper>
         </TooltipProvider>
       </body>
     </html>

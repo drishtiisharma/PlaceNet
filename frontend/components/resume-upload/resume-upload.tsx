@@ -69,7 +69,10 @@ export function ResumeUpload() {
             );
 
             if (!response.ok) {
-                throw new Error("Failed to process resumes.");
+                const errorData = await response.json().catch(() => ({}));
+                console.error("Backend Error Response:", errorData);
+                const errorMessage = errorData.detail || "Failed to process resumes.";
+                throw new Error(errorMessage);
             }
 
             const result = await response.json();
@@ -80,9 +83,9 @@ export function ResumeUpload() {
                 `${result.processed_resumes} resume(s) processed successfully!`
             );
 
-        } catch (error) {
-            console.error(error);
-            alert("Something went wrong while processing resumes.");
+        } catch (error: any) {
+            console.error("Upload Error:", error);
+            alert(`Something went wrong while processing resumes: ${error.message}`);
         }
     };
 

@@ -11,7 +11,7 @@ type Resume = {
     resume_path: string;
 };
 
-export function ResumeTable() {
+export function ResumeTable({ query }: { query?: string }) {
 
     const [loading, setLoading] = useState(true);
     const [resumes, setResumes] = useState<Resume[]>([]);
@@ -19,31 +19,32 @@ export function ResumeTable() {
     useEffect(() => {
 
         async function loadResumes() {
-
+            setLoading(true);
             try {
-
-                const response = await fetch(
-                    "http://localhost:8000/resume/library"
-                );
+                let response;
+                if (query && query.trim() !== "") {
+                    response = await fetch("http://localhost:8000/search/", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ query, top_k: 10 })
+                    });
+                } else {
+                    response = await fetch("http://localhost:8000/resume/library");
+                }
 
                 const data = await response.json();
-
                 setResumes(data);
 
             } catch (error) {
-
                 console.error(error);
-
             } finally {
-
                 setLoading(false);
-
             }
         }
 
         loadResumes();
 
-    }, []);
+    }, [query]);
 
     if (loading) {
         return <ResumeSkeleton />;

@@ -23,6 +23,9 @@ class ParserService:
         elif extension == ".docx":
             text = ParserService._parse_docx(file_bytes)
 
+        elif extension == ".txt":
+            text = file_bytes.decode("utf-8")
+
         else:
             raise ValueError(
                 f"Unsupported file type: {extension}"

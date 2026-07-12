@@ -29,6 +29,7 @@ export default function Footer() {
                                 alt="PlaceNet AI"
                                 width={170}
                                 height={42}
+                                style={{ width: "auto", height: "auto" }}
                             />
                         </Link>
 

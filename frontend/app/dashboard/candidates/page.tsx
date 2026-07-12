@@ -5,9 +5,12 @@ import { RankCandidatesPopover } from "@/components/candidates/rank-candidates-p
 import { CandidatesTable } from "@/components/candidates/candidates-table";
 import { CandidatesPagination } from "@/components/candidates/candidate-pagination";
 
+import { CandidatesProvider } from "@/components/candidates/candidates-context";
+
 export default function CandidatesPage() {
     return (
-        <div className="flex flex-col gap-6 p-6">
+        <CandidatesProvider>
+            <div className="flex flex-col gap-6 p-6">
 
             <CandidatesHeader />
 
@@ -30,6 +33,7 @@ export default function CandidatesPage() {
 
             </div>
 
-        </div>
+            </div>
+        </CandidatesProvider>
     );
 }

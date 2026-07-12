@@ -18,18 +18,16 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
-import { columns, Candidate } from "./columns";
+import { columns } from "./columns";
 import { CandidatesSkeleton } from "./candidates-skeleton";
+import { useCandidates, RankingResult } from "./candidates-context";
 
 export function CandidatesTable() {
+    const { rankedCandidates, isLoading } = useCandidates();
     const [sorting, setSorting] = React.useState<SortingState>([]);
-    const [loading] = React.useState(true);
-
-    // Replace this with API data later
-    const data: Candidate[] = [];
 
     const table = useReactTable({
-        data,
+        data: rankedCandidates,
         columns,
         state: {
             sorting,
@@ -39,7 +37,7 @@ export function CandidatesTable() {
         getSortedRowModel: getSortedRowModel(),
     });
 
-    if (loading) {
+    if (isLoading) {
         return <CandidatesSkeleton />;
     }
 
@@ -83,7 +81,7 @@ export function CandidatesTable() {
                                 colSpan={columns.length}
                                 className="h-24 text-center"
                             >
-                                No candidates found.
+                                No candidates ranked yet. Select a hiring profile and click Rank Candidates!
                             </TableCell>
                         </TableRow>
                     )}

@@ -17,7 +17,7 @@ class EmbeddingService:
             return []
 
         texts = [
-            chunk.text
+            chunk.text if hasattr(chunk, 'text') else chunk
             for chunk in chunks
         ]
 

@@ -12,11 +12,15 @@ import { Message } from "./chat-messages";
 type PromptBoxProps = {
     messages: Message[];
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+    sessionId: string | null;
+    setSessionId: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 export function PromptBox({
     messages,
     setMessages,
+    sessionId,
+    setSessionId
 }: PromptBoxProps) {
     const [message, setMessage] = useState("");
     const [file, setFile] = useState<File | null>(null);
@@ -54,10 +58,16 @@ export function PromptBox({
                 },
                 body: JSON.stringify({
                     message: currentMessage,
+                    session_id: sessionId
                 }),
             });
 
             const data = await response.json();
+
+            if (data.session_id && data.session_id !== sessionId) {
+                setSessionId(data.session_id);
+                localStorage.setItem("chatSessionId", data.session_id);
+            }
 
             const aiMessage: Message = {
                 role: "assistant",
