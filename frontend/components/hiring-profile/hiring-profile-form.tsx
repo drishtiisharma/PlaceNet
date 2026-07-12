@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,15 +77,17 @@ export function HiringProfileForm({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
             });
-            if (res.ok) {
-                alert(`Hiring Profile ${profileId ? 'updated' : 'saved'} successfully!`);
-                if (onSuccess) onSuccess();
-            } else {
-                alert(`Failed to ${profileId ? 'update' : 'save'} Hiring Profile`);
+            if (!res.ok) {
+                const err = await res.json();
+                toast.error(err.message || `Failed to ${profileId ? 'update' : 'save'} Hiring Profile`);
+                return;
             }
+            toast.success(`Hiring Profile ${profileId ? 'updated' : 'saved'} successfully!`);
+            if (onSuccess) onSuccess();
+            router.push("/dashboard/hiring-profiles");
         } catch (error) {
-            console.error("Error saving profile", error);
-            alert("Error saving profile");
+            console.error("Error saving profile:", error);
+            toast.error("An unexpected error occurred while saving.");
         } finally {
             setIsSaving(false);
         }

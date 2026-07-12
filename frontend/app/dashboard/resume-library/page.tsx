@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ResumeSearch } from "../../../components/resume-library/ResumeSearch";
-import { ResumeTable } from "../../../components/resume-library/ResumeTable";
+import { ResumeDataTable } from "../../../components/resume-library/ResumeDataTable";
 
 export default function ResumeLibraryPage() {
-    const [searchQuery, setSearchQuery] = useState("");
-
     return (
         <div className="p-6">
             <h1 className="mb-10 text-3xl font-bold">
@@ -20,9 +16,8 @@ export default function ResumeLibraryPage() {
                     </p>
                 </CardHeader>
 
-                <CardContent className="space-y-6">
-                    <ResumeSearch onSearch={setSearchQuery} />
-                    <ResumeTable query={searchQuery} />
+                <CardContent>
+                    <ResumeDataTable />
                 </CardContent>
             </Card>
         </div>

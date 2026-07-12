@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   description: "AI Powered Placement Platform",
 };
 
-import { ResumeViewerWrapper } from "@/components/resume-viewer/resume-viewer-wrapper";
+
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -22,9 +23,8 @@ export default function RootLayout({
     <html lang="en" className={cn("font-sans", inter.variable)} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <TooltipProvider>
-          <ResumeViewerWrapper>
-            {children}
-          </ResumeViewerWrapper>
+          {children}
+          <Toaster richColors position="top-right" />
         </TooltipProvider>
       </body>
     </html>

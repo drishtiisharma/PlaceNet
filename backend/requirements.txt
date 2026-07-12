@@ -6,6 +6,7 @@ pydantic
 
 pymupdf
 python-docx
+spacy
 
 sentence-transformers
 transformers
@@ -17,8 +18,9 @@ langchain-text-splitters
 
 numpy
 sqlalchemy
-docx2pdf
+psycopg2-binary
 
 # AI and Environment
-groq
+openai
+tenacity
 python-dotenv

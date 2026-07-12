@@ -3,7 +3,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.ai.client import client
+from app.ai.client import llm_service
 from app.ai.rag.intent_parser import IntentParser
 from app.ai.rag.retriever import RAGRetriever
 from app.database.models import ChatMessage
@@ -33,9 +33,7 @@ def chat(db: Session, user_message: str, session_id: str) -> str:
         
     messages.append({"role": "user", "content": user_message})
     
-    # 6. Generate Response
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+    response = llm_service.chat_completion(
         messages=messages
     )
     

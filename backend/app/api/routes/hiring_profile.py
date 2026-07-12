@@ -12,18 +12,12 @@ router = APIRouter(
 
 @router.post("/parse", response_model=HiringProfileCreate)
 async def parse_jd(file: UploadFile = File(...)):
-    try:
-        file_bytes = await file.read()
-        return HiringProfileService.parse_jd(file_bytes, file.filename)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    file_bytes = await file.read()
+    return HiringProfileService.parse_jd(file_bytes, file.filename)
 
 @router.post("/", response_model=HiringProfileResponse)
 def create_profile(profile: HiringProfileCreate, db: Session = Depends(get_db)):
-    try:
-        return HiringProfileService.create_profile(db, profile)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return HiringProfileService.create_profile(db, profile)
 
 @router.get("/", response_model=List[HiringProfileResponse])
 def get_profiles(db: Session = Depends(get_db)):
@@ -38,13 +32,10 @@ def get_profile(profile_id: str, db: Session = Depends(get_db)):
 
 @router.put("/{profile_id}", response_model=HiringProfileResponse)
 def update_profile(profile_id: str, profile_update: HiringProfileCreate, db: Session = Depends(get_db)):
-    try:
-        updated_profile = HiringProfileService.update_profile(db, profile_id, profile_update)
-        if not updated_profile:
-            raise HTTPException(status_code=404, detail="Profile not found")
-        return updated_profile
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    updated_profile = HiringProfileService.update_profile(db, profile_id, profile_update)
+    if not updated_profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return updated_profile
 
 @router.delete("/{profile_id}")
 def delete_profile(profile_id: str, db: Session = Depends(get_db)):

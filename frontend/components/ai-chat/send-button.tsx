@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,11 +12,13 @@ import {
 type SendButtonProps = {
     disabled?: boolean;
     onClick?: () => void;
+    isLoading?: boolean;
 };
 
 export function SendButton({
     disabled,
     onClick,
+    isLoading,
 }: SendButtonProps) {
     return (
         <Tooltip>
@@ -24,10 +26,10 @@ export function SendButton({
                 <Button
                     size="icon"
                     onClick={onClick}
-                    disabled={disabled}
-                    className="bg-orange-600 hover:bg-blue-600 text-white"
+                    disabled={disabled || isLoading}
+                    className="bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-all active:scale-95"
                 >
-                    <ArrowUp className="h-5 w-5" />
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
                 </Button>
 
             </TooltipTrigger>

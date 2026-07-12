@@ -1,4 +1,6 @@
 "use client";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
     Sheet,
     SheetTrigger,
@@ -20,6 +22,41 @@ import {
 
 
 export default function LandingNavbar() {
+    const pathname = usePathname();
+    const [activeSection, setActiveSection] = useState("");
+
+    useEffect(() => {
+        // Only run scroll spy on the homepage
+        if (pathname !== "/") return;
+
+        const observerOptions = {
+            root: null,
+            rootMargin: "-20% 0px -60% 0px", // Adjust margin for earlier triggering during scroll
+            threshold: 0,
+        };
+
+        const observerCallback = (entries: IntersectionObserverEntry[]) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveSection(`#${entry.target.id}`);
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+        
+        // Observe all sections mapped in landingNav
+        landingNav.forEach((item) => {
+            if (item.href.startsWith("#")) {
+                const id = item.href.substring(1);
+                const element = document.getElementById(id);
+                if (element) observer.observe(element);
+            }
+        });
+
+        return () => observer.disconnect();
+    }, [pathname]);
+
     return (
         <header className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-md">
             <div className="flex h-16 items-center justify-between px-3">
@@ -75,7 +112,9 @@ export default function LandingNavbar() {
 
                                     <Link
                                         href={item.href}
-                                        className="group inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-medium transition-colors hover:text-orange-600"
+                                        className={`group inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-medium transition-colors hover:text-orange-600 ${
+                                            activeSection === item.href ? "text-orange-600" : "text-foreground"
+                                        }`}
                                     >
                                         {item.title}
                                     </Link>
@@ -114,7 +153,7 @@ export default function LandingNavbar() {
                         variant="outline"
                         asChild
                     >
-                        <Link href="#footer">
+                        <Link href="/contact">
                             Contact Us
                         </Link>
                     </Button>

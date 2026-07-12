@@ -1,39 +1,19 @@
 import json
-from app.ai.client import client
+from app.ai.client import llm_service
 from app.schemas.hiring_profile import HiringProfileCreate
-
-PROMPT = """
-You are an expert HR assistant. Extract the following information from the provided Job Description text.
-You MUST respond with a valid JSON object matching the exact schema below. Do not include any markdown formatting, code blocks, or extra text. ONLY raw JSON.
-
-{{
-    "job_title": "string",
-    "company": "string or null",
-    "required_skills": ["string"],
-    "preferred_skills": ["string"],
-    "experience": "string or null",
-    "education": "string or null",
-    "eligible_departments": ["string"],
-    "cgpa_requirement": "string or null",
-    "certifications": ["string"],
-    "responsibilities": ["string"],
-    "keywords": ["string"],
-    "job_summary": "string or null"
-}}
-
-Job Description Text:
-{text}
-"""
+from pathlib import Path
 
 class JDExtractor:
     @staticmethod
     def extract(text: str) -> HiringProfileCreate:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+        prompt_path = Path(__file__).resolve().parent.parent / "prompts" / "jd_extractor.md"
+        prompt_template = prompt_path.read_text(encoding="utf-8")
+        
+        response = llm_service.chat_completion(
             messages=[
                 {
                     "role": "user",
-                    "content": PROMPT.format(text=text)
+                    "content": prompt_template.format(text=text)
                 }
             ],
             response_format={"type": "json_object"}
@@ -41,4 +21,11 @@ class JDExtractor:
         
         content = response.choices[0].message.content
         data = json.loads(content)
+        
+        # Sanitize data to ensure list fields are never None
+        list_fields = ["required_skills", "preferred_skills", "eligible_departments", "certifications", "responsibilities", "keywords"]
+        for field in list_fields:
+            if data.get(field) is None:
+                data[field] = []
+                
         return HiringProfileCreate(**data)

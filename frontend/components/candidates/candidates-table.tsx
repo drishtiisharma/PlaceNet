@@ -23,11 +23,43 @@ import { CandidatesSkeleton } from "./candidates-skeleton";
 import { useCandidates, RankingResult } from "./candidates-context";
 
 export function CandidatesTable() {
-    const { rankedCandidates, isLoading } = useCandidates();
+    const { rankedCandidates, isLoading, searchQuery, filters } = useCandidates();
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
+    const filteredCandidates = React.useMemo(() => {
+        let result = rankedCandidates;
+
+        // Search Query
+        if (searchQuery.trim() !== "") {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(c => 
+                c.candidate_name?.toLowerCase().includes(q) ||
+                c.skills?.some(s => s.toLowerCase().includes(q)) ||
+                c.experience?.some(e => e.toLowerCase().includes(q)) ||
+                c.projects?.some(p => p.toLowerCase().includes(q))
+            );
+        }
+
+        // Filters
+        if (filters.skill && filters.skill !== "all") {
+            result = result.filter(c => c.skills?.some(s => s.toLowerCase() === filters.skill.toLowerCase()));
+        }
+        if (filters.cgpa && filters.cgpa !== "all") {
+            const target = Number(filters.cgpa);
+            result = result.filter(c => c.cgpa && Number(c.cgpa) >= target);
+        }
+        if (filters.branch && filters.branch !== "all") {
+            result = result.filter(c => c.department?.toLowerCase() === filters.branch.toLowerCase());
+        }
+        
+        // Note: Year filter logic would require extraction from education. 
+        // We'll skip for now if it's complex, or implement basic logic.
+
+        return result;
+    }, [rankedCandidates, searchQuery, filters]);
+
     const table = useReactTable({
-        data: rankedCandidates,
+        data: filteredCandidates,
         columns,
         state: {
             sorting,
@@ -64,9 +96,9 @@ export function CandidatesTable() {
                 <TableBody>
                     {table.getRowModel().rows.length ? (
                         table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id}>
+                            <TableRow key={row.id} className="hover:bg-muted/50 transition-colors group">
                                 {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
+                                    <TableCell key={cell.id} className="py-4 align-middle">
                                         {flexRender(
                                             cell.column.columnDef.cell,
                                             cell.getContext()

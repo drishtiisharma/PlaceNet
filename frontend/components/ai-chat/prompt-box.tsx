@@ -14,13 +14,17 @@ type PromptBoxProps = {
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
     sessionId: string | null;
     setSessionId: React.Dispatch<React.SetStateAction<string | null>>;
+    isTyping?: boolean;
+    setIsTyping?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function PromptBox({
     messages,
     setMessages,
     sessionId,
-    setSessionId
+    setSessionId,
+    isTyping,
+    setIsTyping
 }: PromptBoxProps) {
     const [message, setMessage] = useState("");
     const [file, setFile] = useState<File | null>(null);
@@ -38,7 +42,7 @@ export function PromptBox({
     }
 
     async function handleSend() {
-        if (!message.trim()) return;
+        if (!message.trim() || isTyping) return;
 
         const userMessage: Message = {
             role: "user",
@@ -49,6 +53,8 @@ export function PromptBox({
 
         const currentMessage = message;
         setMessage("");
+
+        if (setIsTyping) setIsTyping(true);
 
         try {
             const response = await fetch("http://127.0.0.1:8000/chat", {
@@ -74,15 +80,17 @@ export function PromptBox({
                 content: data.reply,
             };
 
+            if (setIsTyping) setIsTyping(false);
             setMessages((prev) => [...prev, aiMessage]);
         } catch (error) {
             console.error(error);
-
+            if (setIsTyping) setIsTyping(false);
+            
             setMessages((prev) => [
                 ...prev,
                 {
                     role: "assistant",
-                    content: "Sorry, I couldn't connect to the AI.",
+                    content: "I'm having trouble connecting right now. Please try again later.",
                 },
             ]);
         }
@@ -135,6 +143,7 @@ export function PromptBox({
 
                 <SendButton
                     disabled={!message.trim()}
+                    isLoading={isTyping}
                     onClick={handleSend}
                 />
 

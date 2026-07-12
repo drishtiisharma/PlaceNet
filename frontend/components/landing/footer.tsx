@@ -166,7 +166,7 @@ export default function Footer() {
 
                 <div className="flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground md:flex-row">
 
-                    <p>
+                    <p suppressHydrationWarning>
                         © {new Date().getFullYear()} PlaceNet AI. All rights reserved.
                     </p>
 

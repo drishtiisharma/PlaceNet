@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Briefcase, Building2, Pencil, Trash2, Copy, FileText, Loader2 } from "lucide-react";
@@ -54,12 +56,19 @@ export function HiringProfileManager() {
         setIsLoading(true);
         try {
             const response = await fetch("http://127.0.0.1:8000/hiring-profile/");
-            if (response.ok) {
-                const data = await response.json();
-                setProfiles(data);
+            if (!response.ok) {
+                const err = await response.json();
+                toast.error(err.message || "Failed to load profiles.");
+                return;
             }
+            const data = await response.json();
+            
+            // Unpack success wrapper if it exists
+            const profilesList = data.success !== undefined ? data.data : data;
+            setProfiles(profilesList);
         } catch (error) {
-            console.error("Failed to fetch profiles", error);
+            console.error("Error loading profiles:", error);
+            toast.error("Could not reach the server.");
         } finally {
             setIsLoading(false);
         }
@@ -77,14 +86,17 @@ export function HiringProfileManager() {
                 method: "DELETE",
             });
             if (response.ok) {
+                toast.success("Profile deleted successfully.");
                 setProfiles(prev => prev.filter(p => p.id !== selectedProfile.id));
                 setIsDeleteModalOpen(false);
+                setSelectedProfile(null);
             } else {
-                alert("Failed to delete profile.");
+                const err = await response.json();
+                toast.error(err.message || "Failed to delete profile.");
             }
         } catch (error) {
-            console.error("Error deleting", error);
-            alert("Error deleting profile.");
+            console.error("Delete error:", error);
+            toast.error("An unexpected error occurred.");
         } finally {
             setIsDeleting(false);
         }

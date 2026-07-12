@@ -29,13 +29,21 @@ class RAGRetriever:
             
             if intent == "search_candidates" or skills or (not names and intent == "general"):
                 query_embedding = EmbeddingService.generate_embeddings([query])[0]
-                vector_results = VectorService.search(query_embedding, top_k=5)
+                vector_results = VectorService.search(query_embedding, top_k=50)
                 
-                resume_ids = set()
+                resume_ids = []
+                seen_resumes = set()
                 if vector_results and "metadatas" in vector_results and vector_results["metadatas"]:
                     for metas in vector_results["metadatas"]:
                         for meta in metas:
-                            resume_ids.add(meta["resume_id"])
+                            r_id = meta.get("resume_id")
+                            if r_id and r_id not in seen_resumes:
+                                seen_resumes.add(r_id)
+                                resume_ids.append(r_id)
+                                if len(resume_ids) >= 5:
+                                    break
+                        if len(resume_ids) >= 5:
+                            break
                 
                 if resume_ids:
                     candidates = db.query(CandidateProfile).filter(CandidateProfile.resume_id.in_(resume_ids)).all()

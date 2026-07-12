@@ -14,6 +14,7 @@ import {
 export default function AIChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [sessionId, setSessionId] = useState<string | null>(null);
+    const [isTyping, setIsTyping] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const loadSessionMessages = (id: string) => {
@@ -52,16 +53,16 @@ export default function AIChatPage() {
             top: scrollRef.current.scrollHeight,
             behavior: "smooth",
         });
-    }, [messages]);
+    }, [messages, isTyping]);
 
     return (
         <ChatLayout>
             <div className="flex flex-1 min-h-0 flex-col w-full">
 
-                <ChatHeader 
-                    currentSessionId={sessionId} 
-                    onSelectSession={handleSelectSession} 
-                    onCreateNewChat={createNewChat} 
+                <ChatHeader
+                    currentSessionId={sessionId}
+                    onSelectSession={handleSelectSession}
+                    onCreateNewChat={createNewChat}
                 />
 
                 <div
@@ -75,7 +76,7 @@ export default function AIChatPage() {
                     ) : (
                         <div className="flex flex-col items-center">
                             <div className="w-full max-w-3xl">
-                                <ChatMessages messages={messages} />
+                                <ChatMessages messages={messages} isTyping={isTyping} />
                             </div>
                         </div>
                     )}
@@ -91,6 +92,8 @@ export default function AIChatPage() {
                                 setSessionId(newId);
                                 localStorage.setItem("chatSessionId", newId);
                             }}
+                            isTyping={isTyping}
+                            setIsTyping={setIsTyping}
                         />
                     </div>
                 </div>

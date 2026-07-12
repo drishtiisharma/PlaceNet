@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,17 +31,20 @@ export function AIAutofillPanel() {
                 body: formData,
             });
             
-            if (response.ok) {
-                const data = await response.json();
-                setParsedData(data);
-            } else {
-                const err = await response.json().catch(() => ({}));
-                console.error("Parse Error:", err);
-                alert(`Failed to parse: ${err.detail || 'Unknown error'}`);
+            if (!response.ok) {
+                const err = await response.json();
+                toast.error(err.message || "Failed to parse Job Description.");
+                return;
             }
+            const data = await response.json();
+            
+            const parsed = data.success !== undefined ? data.data : data;
+
+            toast.success("Successfully extracted information!");
+            setParsedData(parsed);
         } catch (error) {
-            console.error(error);
-            alert("Error parsing document");
+            console.error("AI Autofill Error:", error);
+            toast.error("An unexpected error occurred while parsing.");
         } finally {
             setIsLoading(false);
         }
@@ -47,7 +52,7 @@ export function AIAutofillPanel() {
 
     const handleAutoFillText = () => {
         if (!rawText.trim()) {
-            alert("Please paste a Job Description first.");
+            toast.warning("Please paste a Job Description first.");
             return;
         }
         const file = new File([rawText], "jd.txt", { type: "text/plain" });
@@ -86,7 +91,7 @@ export function AIAutofillPanel() {
 
                     <div className="mt-6 flex justify-center">
                         <Button 
-                            className="h-11 bg-orange-600 hover:bg-blue-600 text-white" 
+                            className="h-11 w-full bg-orange-600 hover:bg-blue-600 text-white" 
                             disabled={isLoading}
                             onClick={handleAutoFillText}
                         >

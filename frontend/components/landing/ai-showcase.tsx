@@ -32,7 +32,7 @@ const ranked = [
 
 export default function AiShowcase() {
     return (
-        <section className="bg-white py-24">
+        <section id="ai-search" className="bg-white py-24">
             <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 lg:grid-cols-2">
 
                 {/* left copy */}

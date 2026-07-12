@@ -34,6 +34,8 @@ class CandidateProfile(Base):
     certifications = Column(JSON, default=[])
     department = Column(String, nullable=True)
     cgpa = Column(String, nullable=True)
+    resume_path = Column(String, nullable=True)
+    original_filename = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
@@ -52,4 +54,13 @@ class ChatMessage(Base):
     session_id = Column(String, index=True)
     role = Column(String) # 'user' or 'assistant'
     content = Column(Text)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+class RankingExplanationCache(Base):
+    __tablename__ = "ranking_explanations"
+
+    id = Column(String, primary_key=True, index=True)
+    resume_id = Column(String, index=True)
+    hiring_profile_id = Column(String, index=True)
+    explanation_data = Column(JSON)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

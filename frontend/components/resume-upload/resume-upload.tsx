@@ -22,8 +22,12 @@ import { Button } from "@/components/ui/button";
 import { CircleFadingArrowUpIcon } from "lucide-react";
 
 
+import { toast } from "sonner";
+import { useState } from "react";
 
 export function ResumeUpload() {
+    const [isProcessing, setIsProcessing] = useState(false);
+
     const dropzone = useDropzone({
         onDropFile: async (file: File) => {
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -52,13 +56,16 @@ export function ResumeUpload() {
                 .map((file) => file.file);
 
             if (uploadedFiles.length === 0) {
-                alert("Please upload at least one resume.");
+                toast.error("Please upload at least one resume.");
                 return;
             }
 
             uploadedFiles.forEach((file) => {
                 formData.append("files", file);
             });
+
+            setIsProcessing(true);
+            const processingToastId = toast.loading(`Processing ${uploadedFiles.length} resumes...`);
 
             const response = await fetch(
                 `${BACKEND_URL}/resume/process`,
@@ -70,22 +77,41 @@ export function ResumeUpload() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error("Backend Error Response:", errorData);
+                toast.dismiss(processingToastId);
                 const errorMessage = errorData.detail || "Failed to process resumes.";
-                throw new Error(errorMessage);
+                toast.error(`Backend Error: ${errorMessage}`);
+                setIsProcessing(false);
+                return;
             }
 
             const result = await response.json();
+            toast.dismiss(processingToastId);
 
-            console.log(result);
+            if (result.status === "success") {
+                toast.success(
+                    `${result.processed_resumes} resume(s) processed successfully!`
+                );
+            } else if (result.status === "partial_success") {
+                toast.error(
+                    `${result.failed_count} of ${result.total_uploaded} resumes could not be processed.`,
+                    {
+                        description: result.failures.map((f: any) => `${f.filename}: ${f.reason}`).join("\n")
+                    }
+                );
+            } else {
+                toast.error(
+                    `${result.failed_count} of ${result.total_uploaded} resumes could not be processed.`,
+                    {
+                        description: result.failures.map((f: any) => `${f.filename}: ${f.reason}`).join("\n")
+                    }
+                );
+            }
 
-            alert(
-                `${result.processed_resumes} resume(s) processed successfully!`
-            );
-
+            setIsProcessing(false);
         } catch (error: any) {
-            console.error("Upload Error:", error);
-            alert(`Something went wrong while processing resumes: ${error.message}`);
+            toast.dismiss();
+            toast.error(`Something went wrong while processing resumes: ${error.message}`);
+            setIsProcessing(false);
         }
     };
 
@@ -94,10 +120,11 @@ export function ResumeUpload() {
             <div className="mb-6 flex justify-end">
                 <Button
                     onClick={handleProcessResumes}
+                    disabled={isProcessing}
                     className="h-11 bg-orange-600 hover:bg-blue-600 text-white"
                 >
                     <CircleFadingArrowUpIcon className="mr-1 h-4 w-4" />
-                    Process Resumes
+                    {isProcessing ? "Processing..." : "Process Resumes"}
                 </Button>
             </div>
             <Dropzone {...dropzone}>

@@ -25,5 +25,3 @@ def rank_candidates(
         return RankingService.rank_candidates(db, hiring_profile_id, request.top_k)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

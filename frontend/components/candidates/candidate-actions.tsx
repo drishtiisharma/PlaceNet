@@ -11,16 +11,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CandidateSheet } from "./candidate-sheet";
 
-type Candidate = {
-    id: number;
-    name: string;
-    phone: string;
-    resume: string;
-    score: number | null;
-};
+import { RankingResult } from "./candidates-context";
 
 interface CandidateActionsProps {
-    candidate: Candidate;
+    candidate: RankingResult;
 }
 
 export function CandidateActions({
@@ -36,7 +30,7 @@ export function CandidateActions({
 
             <DropdownMenuContent align="end" className="w-48">
 
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.open(`http://127.0.0.1:8000/resume/view/${candidate.resume_id}`, "_blank")}>
                     <Eye className="mr-2 h-4 w-4" />
                     View Resume
                 </DropdownMenuItem>
@@ -46,7 +40,7 @@ export function CandidateActions({
                     Download Resume
                 </DropdownMenuItem>
 
-                <CandidateSheet>
+                <CandidateSheet candidate={candidate}>
                     <DropdownMenuItem
                         onSelect={(e) => e.preventDefault()}
                     >

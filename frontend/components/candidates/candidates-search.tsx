@@ -1,23 +1,22 @@
 "use client";
 
 import { Search } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCandidates } from "./candidates-context";
 
 export function CandidateSearch() {
+    const { searchQuery, setSearchQuery } = useCandidates();
+
     return (
-        <div className="flex w-full max-w-xl items-center gap-2">
+        <div className="flex w-full max-w-xl items-center gap-2 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
                 type="text"
-                placeholder="Search by candidate name..."
-                className="flex-1"
+                placeholder="Search candidates by name, skills, or experience..."
+                className="flex-1 pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
             />
-
-            <Button className="bg-orange-600 hover:bg-blue-600 text-white">
-                <Search className="mr-2 h-4 w-4" />
-                Search
-            </Button>
         </div>
     );
 }
