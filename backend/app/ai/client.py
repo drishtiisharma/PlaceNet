@@ -1,12 +1,12 @@
 import os
 import time
 import logging
-from typing import List, Tuple, Dict, Any, Optional
-from abc import ABC, abstractmethod
-from openai import OpenAI, APIError, APIConnectionError, APITimeoutError, RateLimitError
+from typing import List, Any, Optional
+from abc import ABC
+from openai import OpenAI, APIConnectionError, APITimeoutError, RateLimitError
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
 # --- Strategy Pattern: Base Provider ---
@@ -58,12 +58,56 @@ class GeminiProvider(BaseProvider):
 class GroqProvider(BaseProvider):
     provider_name = "groq"
     def __init__(self, model_name: str):
+        raw_key = os.getenv("GROQ_API_KEY", "")
+        clean_key = raw_key.strip()
+        
         super().__init__(
             name="groq", 
             model_name=model_name, 
-            api_key=os.getenv("GROQ_API_KEY"), 
+            api_key=clean_key, 
             base_url="https://api.groq.com/openai/v1"
         )
+        
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        key_found = bool(self.api_key)
+        key_length = len(self.api_key)
+        last_six = self.api_key[-6:] if key_length >= 6 else "None"
+        
+        logger.info(f"--- Groq Provider Audit ---")
+        logger.info(f"Provider selected: {self.name}")
+        logger.info(f"Model selected: {self.model_name}")
+        logger.info(f"API endpoint: {self.base_url}")
+        logger.info(f"API key found: {key_found}")
+        logger.info(f"API key length: {key_length}")
+        logger.info(f"Last six characters of key: {last_six}")
+        logger.info(f"---------------------------")
+
+    def get_client(self):
+        if not self._client:
+            from groq import Groq
+            self._client = Groq(
+                api_key=self.api_key or "empty",
+                max_retries=0, 
+                timeout=15.0
+            )
+        return self._client
+
+    def execute(self, **kwargs) -> Any:
+        client = self.get_client()
+        kwargs.pop("model", None)
+        
+        try:
+            return client.chat.completions.create(model=self.model_name, **kwargs)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            status_code = getattr(e, 'status_code', 'Unknown')
+            if status_code == 'Unknown' and hasattr(e, 'response'):
+                status_code = getattr(e.response, 'status_code', 'Unknown')
+            logger.error(f"Raw HTTP status code returned by Groq: {status_code}")
+            raise
 
 class CerebrasProvider(BaseProvider):
     provider_name = "cerebras"

@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from "react";
 
 export type RankingResult = {
     resume_id: string;
-    candidate_name: string;
+    full_name: string;
     match_score: number;
     ranking_position: number;
     matched_skills: string[];

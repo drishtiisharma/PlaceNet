@@ -42,7 +42,8 @@ class ParserService:
         if not text:
             raise ValueError("No readable text found in resume.")
 
-        name = ParserService._extract_name(text, filename)
+        from app.services.resume.name_extractor import NameExtractor
+        name = NameExtractor.extract(text, filename)
         email = ParserService._extract_email(text)
         phone = ParserService._extract_phone(text)
         skills = ParserService._extract_skills(text)
@@ -55,7 +56,7 @@ class ParserService:
         degree, branch = ParserService._extract_degree_branch(text)
 
         parsed = ParsedResume(
-            candidate_name=name,
+            full_name=name,
             resume_text=text
         )
         

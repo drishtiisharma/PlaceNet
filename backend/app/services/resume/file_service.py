@@ -55,16 +55,16 @@ class FileService:
     def save_file(
         file_bytes: bytes,
         original_filename: str,
-        candidate_name: str
+        full_name: str
     ) -> Path:
         """
         Saving the uploaded resume using:
-        Candidate_Name_Resume.pdf/docx
+        full_name_Resume.pdf/docx
         """
 
         FileService.ensure_upload_directory()
         extension = Path(original_filename).suffix.lower()
-        safe_name = FileService._sanitize_filename(candidate_name)
+        safe_name = FileService._sanitize_filename(full_name)
         filename = f"{safe_name}_Resume{extension}"
         filename = FileService._generate_unique_filename(filename)
 

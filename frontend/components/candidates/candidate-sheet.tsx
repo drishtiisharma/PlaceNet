@@ -47,10 +47,10 @@ export function CandidateSheet({
                     <SheetHeader>
                         <div className="flex items-center gap-4">
                             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-600 font-bold text-xl shadow-sm">
-                                {getInitials(cleanCandidateName(candidate.candidate_name))}
+                                {getInitials(cleanCandidateName(candidate.full_name))}
                             </div>
                             <div className="flex flex-col items-start pr-6">
-                                <SheetTitle className="text-2xl font-bold">{cleanCandidateName(candidate.candidate_name)}</SheetTitle>
+                                <SheetTitle className="text-2xl font-bold">{cleanCandidateName(candidate.full_name)}</SheetTitle>
                                 <SheetDescription className="mt-1.5 flex flex-wrap items-center gap-2">
                                     <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-200">
                                         Score: {candidate.match_score} / 100

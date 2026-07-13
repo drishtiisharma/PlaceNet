@@ -55,20 +55,32 @@ export function HiringProfileManager() {
     const loadProfiles = async () => {
         setIsLoading(true);
         try {
+            console.log("Fetching hiring profiles from http://127.0.0.1:8000/hiring-profile/");
             const response = await fetch("http://127.0.0.1:8000/hiring-profile/");
             if (!response.ok) {
-                const err = await response.json();
-                toast.error(err.message || "Failed to load profiles.");
+                const errText = await response.text();
+                console.error("API Error Response:", response.status, errText);
+                let errMessage = "Failed to load profiles.";
+                try {
+                    const errJson = JSON.parse(errText);
+                    errMessage = errJson.message || errMessage;
+                } catch (e) {}
+                toast.error(errMessage);
                 return;
             }
             const data = await response.json();
+            console.log("Hiring profiles loaded successfully:", data);
             
             // Unpack success wrapper if it exists
             const profilesList = data.success !== undefined ? data.data : data;
             setProfiles(profilesList);
         } catch (error) {
-            console.error("Error loading profiles:", error);
-            toast.error("Could not reach the server.");
+            console.error("Fetch error details:", error);
+            if (error instanceof TypeError && error.message === "Failed to fetch") {
+                toast.error("Network error: Could not connect to the backend. Please verify FastAPI is running on port 8000 and CORS is configured.");
+            } else {
+                toast.error(`Error loading profiles: ${error instanceof Error ? error.message : "Unknown error"}`);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -82,6 +94,7 @@ export function HiringProfileManager() {
         if (!selectedProfile) return;
         setIsDeleting(true);
         try {
+            console.log(`Deleting hiring profile ${selectedProfile.id}...`);
             const response = await fetch(`http://127.0.0.1:8000/hiring-profile/${selectedProfile.id}`, {
                 method: "DELETE",
             });
@@ -91,12 +104,22 @@ export function HiringProfileManager() {
                 setIsDeleteModalOpen(false);
                 setSelectedProfile(null);
             } else {
-                const err = await response.json();
-                toast.error(err.message || "Failed to delete profile.");
+                const errText = await response.text();
+                console.error("Delete API Error Response:", response.status, errText);
+                let errMessage = "Failed to delete profile.";
+                try {
+                    const errJson = JSON.parse(errText);
+                    errMessage = errJson.message || errMessage;
+                } catch (e) {}
+                toast.error(errMessage);
             }
         } catch (error) {
-            console.error("Delete error:", error);
-            toast.error("An unexpected error occurred.");
+            console.error("Delete fetch error:", error);
+            if (error instanceof TypeError && error.message === "Failed to fetch") {
+                toast.error("Network error: Could not connect to the backend to delete.");
+            } else {
+                toast.error("An unexpected error occurred while deleting.");
+            }
         } finally {
             setIsDeleting(false);
         }

@@ -33,7 +33,7 @@ export const columns: ColumnDef<RankingResult>[] = [
         cell: ({ row }) => <span className="font-bold">#{row.original.ranking_position}</span>
     },
     {
-        accessorKey: "candidate_name",
+        accessorKey: "full_name",
         header: ({ column }) => {
             return (
                 <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
@@ -42,7 +42,7 @@ export const columns: ColumnDef<RankingResult>[] = [
                 </Button>
             );
         },
-        cell: ({ row }) => <span className="font-medium text-foreground">{cleanCandidateName(row.original.candidate_name)}</span>
+        cell: ({ row }) => <span className="font-medium text-foreground">{cleanCandidateName(row.original.full_name)}</span>
     },
     {
         accessorKey: "match_score",

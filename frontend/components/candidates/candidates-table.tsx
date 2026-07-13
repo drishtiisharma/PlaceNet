@@ -33,7 +33,7 @@ export function CandidatesTable() {
         if (searchQuery.trim() !== "") {
             const q = searchQuery.toLowerCase();
             result = result.filter(c => 
-                c.candidate_name?.toLowerCase().includes(q) ||
+                c.full_name?.toLowerCase().includes(q) ||
                 c.skills?.some(s => s.toLowerCase().includes(q)) ||
                 c.experience?.some(e => e.toLowerCase().includes(q)) ||
                 c.projects?.some(p => p.toLowerCase().includes(q))

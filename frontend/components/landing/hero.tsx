@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 import HeroDemo from "@/components/landing/hero-demo";
+import TypewriterText from "@/components/animations/typewriter-text";
 
 export default function Hero() {
     return (
@@ -27,13 +28,16 @@ export default function Hero() {
                     </Badge>
 
                     <h1 className="max-w-xl text-5xl font-bold tracking-tight lg:text-6xl">
-
-                        Find the right candidate.
-
-                        <span className="mt-2 block text-orange-500">
-                            Faster. Smarter. Effortlessly.
-                        </span>
-
+                        <TypewriterText 
+                            segments={[
+                                { text: "Find the right candidate." },
+                                { 
+                                    text: "Faster. Smarter. Effortlessly.", 
+                                    className: "mt-2 text-orange-500", 
+                                    isBlock: true 
+                                }
+                            ]}
+                        />
                     </h1>
 
                     <p className="mt-8 max-w-xl text-lg leading-8 text-muted-foreground">

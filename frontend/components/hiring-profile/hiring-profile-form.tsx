@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Field,
@@ -12,19 +12,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+import { useRouter } from "next/navigation";
+
 export interface HiringProfileData {
     job_title: string;
-    company?: string;
+    company?: string | null;
     required_skills: string[];
     preferred_skills: string[];
-    experience?: string;
-    education?: string;
+    experience?: string | null;
+    education?: string | null;
     eligible_departments: string[];
-    cgpa_requirement?: string;
+    cgpa_requirement?: string | null;
     certifications: string[];
     responsibilities: string[];
     keywords: string[];
-    job_summary?: string;
+    job_summary?: string | null;
 }
 
 export function HiringProfileForm({ 
@@ -36,6 +38,7 @@ export function HiringProfileForm({
     profileId?: string,
     onSuccess?: () => void
 }) {
+    const router = useRouter();
     const [formData, setFormData] = useState<HiringProfileData>(initialData || {
         job_title: "",
         company: "",
@@ -52,6 +55,13 @@ export function HiringProfileForm({
     });
 
     const [isSaving, setIsSaving] = useState(false);
+    
+    // In case initialData changes without remounting
+    useEffect(() => {
+        if (initialData) {
+            setFormData(initialData);
+        }
+    }, [initialData]);
 
     const handleChange = (field: keyof HiringProfileData, value: string | string[]) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -65,6 +75,7 @@ export function HiringProfileForm({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
+        console.log("Form State on Submit (API Request Payload):", formData);
         try {
             const url = profileId 
                 ? `http://127.0.0.1:8000/hiring-profile/${profileId}` 
@@ -77,9 +88,12 @@ export function HiringProfileForm({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
             });
+            
+            const resData = await res.json().catch(() => ({}));
+            console.log("API Response:", resData);
+
             if (!res.ok) {
-                const err = await res.json();
-                toast.error(err.message || `Failed to ${profileId ? 'update' : 'save'} Hiring Profile`);
+                toast.error(resData.detail || resData.message || `Failed to ${profileId ? 'update' : 'save'} Hiring Profile`);
                 return;
             }
             toast.success(`Hiring Profile ${profileId ? 'updated' : 'saved'} successfully!`);
@@ -99,7 +113,7 @@ export function HiringProfileForm({
                 <Field>
                     <FieldLabel>Job Title</FieldLabel>
                     <Input 
-                        value={formData.job_title} 
+                        value={formData.job_title || ""} 
                         onChange={e => handleChange("job_title", e.target.value)} 
                         placeholder="Frontend Developer" 
                         required 
@@ -109,7 +123,7 @@ export function HiringProfileForm({
                 <Field>
                     <FieldLabel>Company</FieldLabel>
                     <Input 
-                        value={formData.company} 
+                        value={formData.company || ""} 
                         onChange={e => handleChange("company", e.target.value)} 
                         placeholder="Company Name" 
                     />
@@ -118,7 +132,7 @@ export function HiringProfileForm({
                 <Field>
                     <FieldLabel>Experience</FieldLabel>
                     <Input 
-                        value={formData.experience} 
+                        value={formData.experience || ""} 
                         onChange={e => handleChange("experience", e.target.value)} 
                         placeholder="2+ Years" 
                     />
@@ -127,7 +141,7 @@ export function HiringProfileForm({
                 <Field>
                     <FieldLabel>Education</FieldLabel>
                     <Input 
-                        value={formData.education} 
+                        value={formData.education || ""} 
                         onChange={e => handleChange("education", e.target.value)} 
                         placeholder="Bachelor's in CS" 
                     />
@@ -136,7 +150,7 @@ export function HiringProfileForm({
                 <Field>
                     <FieldLabel>CGPA Requirement</FieldLabel>
                     <Input 
-                        value={formData.cgpa_requirement} 
+                        value={formData.cgpa_requirement || ""} 
                         onChange={e => handleChange("cgpa_requirement", e.target.value)} 
                         placeholder="7.5+" 
                     />
@@ -146,7 +160,7 @@ export function HiringProfileForm({
                     <FieldLabel>Required Skills (comma separated)</FieldLabel>
                     <Textarea
                         className="resize-none"
-                        value={formData.required_skills.join(", ")}
+                        value={(formData.required_skills || []).join(", ")}
                         onChange={e => handleStringList("required_skills", e.target.value)}
                         placeholder="React, TypeScript, Next.js..."
                     />
@@ -156,7 +170,7 @@ export function HiringProfileForm({
                     <FieldLabel>Preferred Skills (comma separated)</FieldLabel>
                     <Textarea
                         className="resize-none"
-                        value={formData.preferred_skills.join(", ")}
+                        value={(formData.preferred_skills || []).join(", ")}
                         onChange={e => handleStringList("preferred_skills", e.target.value)}
                         placeholder="Node.js, GraphQL..."
                     />
@@ -165,7 +179,7 @@ export function HiringProfileForm({
                 <Field>
                     <FieldLabel>Eligible Departments (comma separated)</FieldLabel>
                     <Input 
-                        value={formData.eligible_departments.join(", ")}
+                        value={(formData.eligible_departments || []).join(", ")}
                         onChange={e => handleStringList("eligible_departments", e.target.value)}
                         placeholder="CSE, IT..." 
                     />
@@ -174,7 +188,7 @@ export function HiringProfileForm({
                 <Field>
                     <FieldLabel>Certifications (comma separated)</FieldLabel>
                     <Input 
-                        value={formData.certifications.join(", ")}
+                        value={(formData.certifications || []).join(", ")}
                         onChange={e => handleStringList("certifications", e.target.value)}
                         placeholder="AWS Certified..." 
                     />
@@ -184,7 +198,7 @@ export function HiringProfileForm({
                     <FieldLabel>Responsibilities (comma separated)</FieldLabel>
                     <Textarea
                         className="resize-none"
-                        value={formData.responsibilities.join(", ")}
+                        value={(formData.responsibilities || []).join(", ")}
                         onChange={e => handleStringList("responsibilities", e.target.value)}
                         placeholder="Describe the responsibilities..."
                     />
@@ -193,7 +207,7 @@ export function HiringProfileForm({
                 <Field>
                     <FieldLabel>Keywords (comma separated)</FieldLabel>
                     <Input 
-                        value={formData.keywords.join(", ")}
+                        value={(formData.keywords || []).join(", ")}
                         onChange={e => handleStringList("keywords", e.target.value)}
                         placeholder="Frontend, Web..." 
                     />
@@ -203,7 +217,7 @@ export function HiringProfileForm({
                     <FieldLabel>Job Summary</FieldLabel>
                     <Textarea
                         className="resize-none"
-                        value={formData.job_summary}
+                        value={formData.job_summary || ""}
                         onChange={e => handleChange("job_summary", e.target.value)}
                         placeholder="Brief summary..."
                     />

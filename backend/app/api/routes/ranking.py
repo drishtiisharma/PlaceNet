@@ -25,3 +25,9 @@ def rank_candidates(
         return RankingService.rank_candidates(db, hiring_profile_id, request.top_k)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        import traceback
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Ranking failed: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Ranking pipeline failed: {str(e)}")

@@ -12,12 +12,24 @@ router = APIRouter(
 
 @router.post("/parse", response_model=HiringProfileCreate)
 async def parse_jd(file: UploadFile = File(...)):
-    file_bytes = await file.read()
-    return HiringProfileService.parse_jd(file_bytes, file.filename)
+    try:
+        file_bytes = await file.read()
+        return HiringProfileService.parse_jd(file_bytes, file.filename)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error in parse_jd: {e}")
+        raise HTTPException(status_code=422, detail=f"Failed to parse Job Description: {str(e)}")
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=HiringProfileResponse)
 def create_profile(profile: HiringProfileCreate, db: Session = Depends(get_db)):
-    return HiringProfileService.create_profile(db, profile)
+    logger.info(f"Received create_profile request: {profile.model_dump()}")
+    created = HiringProfileService.create_profile(db, profile)
+    logger.info(f"Database Insert Successful: {created.id}")
+    return created
 
 @router.get("/", response_model=List[HiringProfileResponse])
 def get_profiles(db: Session = Depends(get_db)):

@@ -64,14 +64,14 @@ class ResumePipeline:
                     file_bytes=file_bytes,
                     filename=file.filename
                 )
-                logger.info(f"[{file.filename}] Resume parsed. Candidate: {parsed_resume.candidate_name}")
+                logger.info(f"[{file.filename}] Resume parsed. Candidate: {parsed_resume.full_name}")
 
                 # Save original resume
                 logger.info(f"[{file.filename}] Saving original resume...")
                 saved_path = FileService.save_file(
                     file_bytes=file_bytes,
                     original_filename=file.filename,
-                    candidate_name=parsed_resume.candidate_name
+                    full_name=parsed_resume.full_name
                 )
                 logger.info(f"[{file.filename}] Saved to {saved_path}")
 
@@ -79,7 +79,6 @@ class ResumePipeline:
                 if saved_path.suffix.lower() == ".docx":
                     logger.info(f"[{file.filename}] Converting DOCX to PDF...")
                     from docx2pdf import convert
-                    import pathlib
                     pdf_path = saved_path.with_suffix(".pdf")
                     
                     def _convert_docx():
@@ -108,7 +107,7 @@ class ResumePipeline:
                 # Use deterministic extracted profile
                 logger.info(f"[{file.filename}] Using deterministic profile data...")
                 
-                ext_name = parsed_resume.candidate_name
+                ext_name = parsed_resume.full_name
                 ext_skills = parsed_resume.extracted_skills
                 ext_education = parsed_resume.extracted_education
                 ext_projects = parsed_resume.extracted_projects
@@ -127,7 +126,7 @@ class ResumePipeline:
                     db_candidate = CandidateProfile(
                         id=str(db_uuid()),
                         resume_id=resume_id,
-                        candidate_name=ext_name,
+                        full_name=ext_name,
                         skills=ext_skills,
                         education=ext_education,
                         projects=ext_projects,
@@ -178,16 +177,9 @@ class ResumePipeline:
                 logger.error(f"[{file.filename}] Failed processing: {e}\n{traceback.format_exc()}")
                 failed_count += 1
                 
-                error_msg = str(e).lower()
-                friendly_reason = "Unable to process this resume. Please try again."
-                if "timeout" in error_msg or "rate limit" in error_msg:
-                    friendly_reason = "The AI service is temporarily busy. Please try again in a few minutes."
-                elif "no text could be extracted" in error_msg or "pdf" in error_msg:
-                    friendly_reason = "This resume could not be parsed. Please verify the file is not corrupted."
-                    
                 failures.append({
                     "filename": file.filename,
-                    "reason": friendly_reason
+                    "reason": f"{type(e).__name__}: {str(e)}"
                 })
 
         logger.info(f"Pipeline complete. Processed {processed}/{len(files)} files. Failed: {failed_count}")

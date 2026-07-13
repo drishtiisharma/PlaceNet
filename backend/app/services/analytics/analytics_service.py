@@ -1,8 +1,6 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func
-from typing import Dict, Any, List
+from typing import Dict, Any
 from collections import Counter
-from datetime import datetime
 
 from app.database.models import HiringProfile, CandidateProfile
 

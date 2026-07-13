@@ -59,7 +59,7 @@ export const landingNav = [
         href: "#faq",
     },
     {
-        title: "Contact",
+        title: "Contact Us",
         href: "/contact",
     },
 ];

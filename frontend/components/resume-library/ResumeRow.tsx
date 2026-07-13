@@ -5,7 +5,7 @@ import { ResumeActions } from "./ResumeActions";
 
 type Resume = {
     resume_id: string;
-    candidate_name: string;
+    full_name: string;
     original_filename: string;
     resume_path: string;
 };
@@ -23,7 +23,7 @@ export function ResumeRow({
 
                 <div>
                     <p className="font-medium">
-                        {resume.candidate_name}
+                        {resume.full_name}
                     </p>
 
                     <p className="text-sm text-muted-foreground">

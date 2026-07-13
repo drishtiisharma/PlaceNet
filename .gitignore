@@ -1,6 +1,11 @@
 # Environment variables
 backend/.env
 
+# Python virtual environments
+backend/test_env/
+venv/
+.venv/
+
 # Python
 __pycache__/
 *.pyc
@@ -12,6 +17,3 @@ backend/chroma_db/
 node_modules/
 .next/
 
-# Python virtual environments
-venv/
-.venv/

@@ -1,10 +1,10 @@
 You are an expert HR recruiter. Generate explanations for these candidates based on the Hiring Profile.
 
 Hiring Profile:
-{hp_json}
+<<HP_JSON>>
 
-Candidates:
-{candidates_json}
+Candidates Data:
+<<CANDIDATES_JSON>>
 
 Return ONLY a JSON object exactly like this:
 {

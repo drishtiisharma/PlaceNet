@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 class CandidateProfileBase(BaseModel):
-    candidate_name: str
+    full_name: str
     skills: List[str] = Field(default_factory=list)
     education: List[str] = Field(default_factory=list)
     projects: List[str] = Field(default_factory=list)
@@ -32,7 +32,7 @@ class CandidateProfileResponse(CandidateProfileBase):
 
 class RankingResult(BaseModel):
     resume_id: str
-    candidate_name: str
+    full_name: str
     match_score: int
     ranking_position: int
     matched_skills: List[str]

@@ -1,11 +1,10 @@
 from sqlalchemy.orm import Session
 from uuid import uuid4
-import json
 
 from app.database.models import HiringProfile
 from app.schemas.hiring_profile import HiringProfileCreate
 from app.services.hiring_profile.hiring_profile_vector_service import HiringProfileVectorService
-from app.ai.parsing.jd_extractor import JDExtractor
+from app.services.hiring_profile.jd_parser import DeterministicJDParser
 from app.services.resume.parser_service import ParserService
 
 class HiringProfileService:
@@ -15,8 +14,8 @@ class HiringProfileService:
         parsed = ParserService.parse(file_bytes, filename)
         text = parsed.resume_text
         
-        # Extract structured JSON via LLM
-        hiring_profile_data = JDExtractor.extract(text)
+        # Extract structured JSON deterministically
+        hiring_profile_data = DeterministicJDParser.parse(text)
         return hiring_profile_data
 
     @staticmethod

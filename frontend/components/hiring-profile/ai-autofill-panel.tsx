@@ -32,15 +32,17 @@ export function AIAutofillPanel() {
             });
             
             if (!response.ok) {
-                const err = await response.json();
-                toast.error(err.message || "Failed to parse Job Description.");
+                const err = await response.json().catch(() => ({}));
+                toast.error(err.detail || err.message || "Failed to parse Job Description.");
                 return;
             }
             const data = await response.json();
+            console.log("Parser API Response:", data);
             
             const parsed = data.success !== undefined ? data.data : data;
 
             toast.success("Successfully extracted information!");
+            console.log("Setting frontend parsed state:", parsed);
             setParsedData(parsed);
         } catch (error) {
             console.error("AI Autofill Error:", error);

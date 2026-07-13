@@ -90,7 +90,11 @@ export default function AIChatPage() {
                             sessionId={sessionId}
                             setSessionId={(newId) => {
                                 setSessionId(newId);
-                                localStorage.setItem("chatSessionId", newId);
+                                if (typeof newId === 'string') {
+                                    localStorage.setItem("chatSessionId", newId);
+                                } else if (newId === null) {
+                                    localStorage.removeItem("chatSessionId");
+                                }
                             }}
                             isTyping={isTyping}
                             setIsTyping={setIsTyping}

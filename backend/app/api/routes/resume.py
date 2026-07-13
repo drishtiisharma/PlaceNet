@@ -67,7 +67,7 @@ def list_resumes(
     
     if search:
         query = query.filter(or_(
-            CandidateProfile.candidate_name.ilike(f"%{search}%"),
+            CandidateProfile.full_name.ilike(f"%{search}%"),
             CandidateProfile.original_filename.ilike(f"%{search}%")
         ))
     if branch and branch != "all":

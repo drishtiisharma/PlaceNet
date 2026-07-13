@@ -124,10 +124,12 @@
 # Installation
 
 ```bash
-git clone -b testing2 https://github.com/drishtiisharma/PlaceNet.git
+git clone -b testing3 https://github.com/drishtiisharma/PlaceNet.git
 cd PlaceNet/frontend
 npm install
 npm run dev
+cd PlaceNet/backend
+pip install -r requirements.txt
 ````
 
 Open your browser and visit:

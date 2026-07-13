@@ -6,7 +6,7 @@ import { ResumeRow } from "./ResumeRow";
 
 type Resume = {
     resume_id: string;
-    candidate_name: string;
+    full_name: string;
     original_filename: string;
     resume_path: string;
 };

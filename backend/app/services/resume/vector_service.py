@@ -44,7 +44,7 @@ class VectorService:
 
                 "resume_id": resume_id,
 
-                "candidate_name": chunk.candidate_name,
+                "full_name": chunk.candidate_name,
 
                 "section": chunk.section,
 
@@ -85,7 +85,7 @@ class VectorService:
             if resume_id not in resumes:
                 resumes[resume_id] = {
                     "resume_id": resume_id,
-                    "candidate_name": metadata["candidate_name"],
+                    "full_name": metadata["full_name"],
                     "resume_path": metadata["resume_path"],
                     "original_filename": metadata["original_filename"]
                 }
@@ -107,7 +107,7 @@ class VectorService:
         metadata = results["metadatas"][0]
         return {
             "resume_id": metadata["resume_id"],
-            "candidate_name": metadata["candidate_name"],
+            "full_name": metadata["full_name"],
             "resume_path": metadata["resume_path"],
             "original_filename": metadata["original_filename"]
         }
@@ -132,3 +132,77 @@ class VectorService:
             query_embeddings=[query_embedding],
             n_results=top_k
         )
+
+    @staticmethod
+    def get_unique_resume_count() -> int:
+        """
+        Returns the number of unique resumes currently stored in ChromaDB.
+        """
+        return len(VectorService.get_all_resumes())
+
+    @staticmethod
+    def rebuild_index_from_db(db):
+        """
+        Rebuilds missing resumes in ChromaDB by parsing from original files.
+        """
+        import logging
+        from app.database.models import CandidateProfile
+        from app.services.resume.parser_service import ParserService
+        from app.services.resume.chunk_service import ChunkService
+        from app.services.resume.embedding_service import EmbeddingService
+        
+        logger = logging.getLogger(__name__)
+        logger.info("Starting automatic vector store sync...")
+        
+        # Get DB candidates
+        db_candidates = db.query(CandidateProfile).all()
+        db_map = {c.resume_id: c for c in db_candidates}
+        
+        # Get Chroma resumes
+        chroma_resumes = VectorService.get_all_resumes()
+        chroma_ids = {r["resume_id"] for r in chroma_resumes}
+        
+        missing_ids = set(db_map.keys()) - chroma_ids
+        
+        if not missing_ids:
+            logger.info("Vector store is perfectly synced with Database.")
+            return
+            
+        logger.warning(f"Found {len(missing_ids)} missing resumes in vector store. Rebuilding...")
+        
+        for r_id in missing_ids:
+            c = db_map[r_id]
+            try:
+                # Read file
+                with open(c.resume_path, "rb") as f:
+                    file_bytes = f.read()
+                
+                # Parse
+                parsed_resume = ParserService.parse(
+                    file_bytes=file_bytes,
+                    filename=c.original_filename
+                )
+                
+                # Crucial to use the exact candidate_name/full_name from the DB profile
+                # so it maps correctly!
+                parsed_resume.full_name = c.full_name
+                
+                # Chunk
+                chunks = ChunkService.create_chunks(parsed_resume)
+                
+                # Embed
+                embeddings = EmbeddingService.generate_embeddings(chunks)
+                
+                # Store
+                VectorService.store(
+                    resume_id=r_id,
+                    chunks=chunks,
+                    embeddings=embeddings,
+                    resume_path=c.resume_path,
+                    original_filename=c.original_filename
+                )
+                logger.info(f"Successfully rebuilt vector index for resume {r_id} ({c.full_name})")
+            except Exception as e:
+                import traceback
+                logger.error(f"Failed to rebuild index for {r_id}: {e}\n{traceback.format_exc()}")
+

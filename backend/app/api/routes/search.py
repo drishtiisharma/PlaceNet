@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import List
 
 from app.database.connection import get_db
 from app.database.models import CandidateProfile
@@ -47,7 +46,7 @@ def search_resumes(search_req: SearchQuery, db: Session = Depends(get_db)):
         results = []
         for c in candidates:
             # We need original_filename and resume_path which we can pull from vector metadata 
-            # Or we can do a simpler return format since frontend expects { resume_id, candidate_name, original_filename, resume_path }
+            # Or we can do a simpler return format since frontend expects { resume_id, full_name, original_filename, resume_path }
             # Let's extract them from the metadata to match the frontend expectations
             original_filename = "resume.pdf"
             resume_path = ""
@@ -60,7 +59,7 @@ def search_resumes(search_req: SearchQuery, db: Session = Depends(get_db)):
 
             results.append({
                 "resume_id": c.resume_id,
-                "candidate_name": c.candidate_name,
+                "full_name": c.full_name,
                 "original_filename": original_filename,
                 "resume_path": resume_path
             })

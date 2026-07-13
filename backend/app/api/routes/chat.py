@@ -5,17 +5,20 @@ import uuid
 
 from app.database.connection import get_db
 from app.database.models import ChatSession, ChatMessage
-from app.schemas.chat import ChatRequest, ChatResponse, ChatMessageResponse, ChatSessionResponse, SessionUpdate
+from app.schemas.chat import ChatRequest, ChatResponse, ChatSessionResponse, SessionUpdate
 from app.ai.rag.generator import chat
 from app.ai.client import llm_service
 
 router = APIRouter()
 
+from app.prompts.loader import load_prompt
+
 def generate_chat_title(message: str) -> str:
     try:
+        chat_title_prompt = load_prompt("chat_title.md")
         response = llm_service.chat_completion(
             messages=[
-                {"role": "system", "content": "Generate a concise 3-5 word title for a chat session based on the user's first message. Respond ONLY with the title string, no quotes."},
+                {"role": "system", "content": chat_title_prompt},
                 {"role": "user", "content": message}
             ]
         )

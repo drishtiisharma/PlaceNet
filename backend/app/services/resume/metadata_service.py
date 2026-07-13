@@ -20,7 +20,7 @@ class MetadataService:
 
                 resumes[resume_id] = {
                     "resume_id": resume_id,
-                    "candidate_name": metadata["candidate_name"],
+                    "full_name": metadata["full_name"],
                     "resume_path": metadata["resume_path"],
                     "original_filename": metadata["original_filename"]
                 }

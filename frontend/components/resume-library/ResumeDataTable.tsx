@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 type Resume = {
     resume_id: string;
-    candidate_name: string;
+    full_name: string;
     original_filename: string;
     department: string;
     cgpa: string;
@@ -205,7 +205,7 @@ export function ResumeDataTable() {
                                     onChange={(e) => handleSelectAll(e.target.checked)}
                                 />
                             </TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('candidate_name')}>Name</TableHead>
+                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('full_name')}>Name</TableHead>
                             <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('department')}>Domain</TableHead>
                             <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('created_at')}>Uploaded</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -236,7 +236,7 @@ export function ResumeDataTable() {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        <div className="font-medium">{resume.candidate_name || 'Unknown'}</div>
+                                        <div className="font-medium">{resume.full_name || 'Unknown'}</div>
                                         <div className="text-xs text-muted-foreground">{resume.original_filename}</div>
                                     </TableCell>
                                     <TableCell>{resume.department || '-'}</TableCell>

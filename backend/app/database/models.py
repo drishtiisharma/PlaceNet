@@ -26,7 +26,7 @@ class CandidateProfile(Base):
 
     id = Column(String, primary_key=True, index=True)
     resume_id = Column(String, index=True)
-    candidate_name = Column(String, index=True)
+    full_name = Column(String, index=True)
     skills = Column(JSON, default=[])
     education = Column(JSON, default=[])
     projects = Column(JSON, default=[])

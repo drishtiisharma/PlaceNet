@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import List
 import json
 
 from app.database.models import HiringProfile, CandidateProfile
@@ -124,17 +124,15 @@ class RankingService:
                 c = item["profile"]
                 candidates_json.append({
                     "resume_id": c.resume_id,
-                    "candidate_name": c.candidate_name,
+                    "full_name": c.full_name,
                     "skills": c.skills,
                     "experience": c.experience,
                     "match_score": item["score"]
                 })
                 
-            from pathlib import Path
-            prompt_path = Path(__file__).resolve().parent.parent.parent / "ai" / "prompts" / "ranking_explanation.md"
-            prompt_template = prompt_path.read_text(encoding="utf-8")
-            
-            prompt = prompt_template.format(
+            from app.prompts.loader import load_prompt
+            prompt = load_prompt(
+                "ranking.md",
                 hp_json=json.dumps(hp_json, indent=2),
                 candidates_json=json.dumps(candidates_json, indent=2)
             )
@@ -188,7 +186,7 @@ class RankingService:
             
             res_dict = {
                 "resume_id": r_id,
-                "candidate_name": c.candidate_name,
+                "full_name": c.full_name,
                 "match_score": item["score"],
                 "ranking_position": idx + 1,
                 "matched_skills": item["matched"],

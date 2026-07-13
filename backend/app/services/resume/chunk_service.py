@@ -38,7 +38,7 @@ class ChunkService:
         for chunk_text in split_chunks:
             chunks.append(
                 ResumeChunk(
-                    candidate_name=parsed_resume.candidate_name,
+                    candidate_name=parsed_resume.full_name,
                     section="General",
                     text=chunk_text
                 )

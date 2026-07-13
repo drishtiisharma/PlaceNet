@@ -149,15 +149,6 @@ export default function LandingNavbar() {
                         </Link>
                     </Button>
 
-                    <Button
-                        variant="outline"
-                        asChild
-                    >
-                        <Link href="/contact">
-                            Contact Us
-                        </Link>
-                    </Button>
-
                 </div>
 
                 {/* Mobile Buttons */}

@@ -50,7 +50,7 @@ export function ParsedProfileDialog({ resumeId, open, onOpenChange }: ParsedProf
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl">{profile?.candidate_name || 'Candidate Profile'}</DialogTitle>
+                    <DialogTitle className="text-2xl">{profile?.full_name || 'Candidate Profile'}</DialogTitle>
                     <DialogDescription>Extracted structured information from the resume.</DialogDescription>
                 </DialogHeader>
 

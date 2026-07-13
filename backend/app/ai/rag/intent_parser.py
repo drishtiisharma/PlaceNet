@@ -1,14 +1,14 @@
 import json
 from app.ai.client import llm_service
-from pathlib import Path
 
 class IntentParser:
     @staticmethod
     def parse(query: str, history: list = None) -> dict:
-        prompt_path = Path(__file__).resolve().parent.parent / "prompts" / "intent.md"
-        prompt_template = prompt_path.read_text(encoding="utf-8")
+        from app.prompts.loader import load_prompt
         
-        messages = [{"role": "system", "content": prompt_template}]
+        prompt_content = load_prompt("intent.md")
+        
+        messages = [{"role": "system", "content": prompt_content}]
         if history:
             for msg in history[-5:]: # Include last 5 messages for context
                 messages.append({"role": msg.role, "content": msg.content})

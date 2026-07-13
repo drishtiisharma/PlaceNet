@@ -3,7 +3,7 @@ from typing import List, Optional
 
 @dataclass
 class ParsedResume:
-    candidate_name: str
+    full_name: str
     resume_text: str
     extracted_email: Optional[str] = None
     extracted_phone: Optional[str] = None
