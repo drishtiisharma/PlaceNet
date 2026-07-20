@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Briefcase, Building2, Pencil, Trash2, Copy, FileText, Loader2 } from "lucide-react";
+import { fetchApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -55,8 +56,8 @@ export function HiringProfileManager() {
     const loadProfiles = async () => {
         setIsLoading(true);
         try {
-            console.log("Fetching hiring profiles from http://127.0.0.1:8000/hiring-profile/");
-            const response = await fetch("http://127.0.0.1:8000/hiring-profile/");
+            console.log("Fetching hiring profiles from /hiring-profile/");
+            const response = await fetchApi("/hiring-profile/");
             if (!response.ok) {
                 const errText = await response.text();
                 console.error("API Error Response:", response.status, errText);
@@ -95,7 +96,7 @@ export function HiringProfileManager() {
         setIsDeleting(true);
         try {
             console.log(`Deleting hiring profile ${selectedProfile.id}...`);
-            const response = await fetch(`http://127.0.0.1:8000/hiring-profile/${selectedProfile.id}`, {
+            const response = await fetchApi(`/hiring-profile/${selectedProfile.id}`, {
                 method: "DELETE",
             });
             if (response.ok) {

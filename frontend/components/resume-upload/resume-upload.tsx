@@ -24,9 +24,19 @@ import { CircleFadingArrowUpIcon } from "lucide-react";
 
 import { toast } from "sonner";
 import { useState } from "react";
+import { CheckCircle2, ArrowRight, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export function ResumeUpload() {
     const [isProcessing, setIsProcessing] = useState(false);
+    const [uploadSuccessResult, setUploadSuccessResult] = useState<{ 
+        processed_resumes: number, 
+        total_uploaded: number,
+        failed_count: number,
+        failures: { filename: string, reason: string }[] 
+    } | null>(null);
 
     const dropzone = useDropzone({
         onDropFile: async (file: File) => {
@@ -87,22 +97,30 @@ export function ResumeUpload() {
             const result = await response.json();
             toast.dismiss(processingToastId);
 
-            if (result.status === "success") {
-                toast.success(
-                    `${result.processed_resumes} resume(s) processed successfully!`
-                );
-            } else if (result.status === "partial_success") {
-                toast.error(
-                    `${result.failed_count} of ${result.total_uploaded} resumes could not be processed.`,
-                    {
-                        description: result.failures.map((f: any) => `${f.filename}: ${f.reason}`).join("\n")
+            if (result.status === "success" || result.status === "partial_success") {
+                if (result.processed_resumes > 0) {
+                    if (result.status === "success") {
+                        toast.success(`${result.processed_resumes} resume(s) processed successfully!`);
                     }
-                );
+                    setUploadSuccessResult({ 
+                        processed_resumes: result.processed_resumes,
+                        total_uploaded: result.total_uploaded || result.processed_resumes,
+                        failed_count: result.failed_count || 0,
+                        failures: result.failures || []
+                    });
+                } else {
+                    toast.error(
+                        `${result.failed_count} of ${result.total_uploaded} resumes could not be processed.`,
+                        {
+                            description: (result.failures || []).map((f: any) => `${f.filename}: ${f.reason}`).join("\n")
+                        }
+                    );
+                }
             } else {
                 toast.error(
                     `${result.failed_count} of ${result.total_uploaded} resumes could not be processed.`,
                     {
-                        description: result.failures.map((f: any) => `${f.filename}: ${f.reason}`).join("\n")
+                        description: (result.failures || []).map((f: any) => `${f.filename}: ${f.reason}`).join("\n")
                     }
                 );
             }
@@ -115,19 +133,91 @@ export function ResumeUpload() {
         }
     };
 
+    const resetUpload = () => {
+        setUploadSuccessResult(null);
+        // We can force dropzone to clear by a simple window reload, 
+        // but better to just let user refresh or we can try to clear statuses.
+        // For now, if we unmount the dropzone in the conditional render, 
+        // it might reset its state.
+    };
+
     return (
         <div className="not-prose flex flex-col gap-4">
-            <div className="mb-6 flex justify-end">
-                <Button
-                    onClick={handleProcessResumes}
-                    disabled={isProcessing}
-                    className="h-11 bg-orange-600 hover:bg-blue-600 text-white"
-                >
-                    <CircleFadingArrowUpIcon className="mr-1 h-4 w-4" />
-                    {isProcessing ? "Processing..." : "Process Resumes"}
-                </Button>
-            </div>
-            <Dropzone {...dropzone}>
+            <AnimatePresence mode="wait">
+                {uploadSuccessResult ? (
+                    <motion.div 
+                        key="success"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-col items-center justify-center py-20 px-4 bg-white rounded-xl shadow-sm border text-center"
+                    >
+                        <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                            <CheckCircle2 className="h-8 w-8 text-green-600" />
+                        </div>
+                        <h2 className="text-2xl font-semibold mb-2">Upload Successful!</h2>
+                        <p className="text-muted-foreground mb-6 max-w-md">
+                            Your resumes have been uploaded successfully and are ready for AI processing.
+                        </p>
+                        
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none mb-8 px-4 py-1.5 text-sm">
+                            {uploadSuccessResult.processed_resumes} of {uploadSuccessResult.total_uploaded} resumes uploaded successfully
+                        </Badge>
+
+                        {uploadSuccessResult.failed_count > 0 && (
+                            <div className="mb-8 w-full max-w-md text-left bg-red-50 border border-red-100 rounded-lg p-4">
+                                <div className="flex items-center gap-2 text-red-800 font-semibold mb-3">
+                                    <AlertTriangle className="h-5 w-5" />
+                                    <span>{uploadSuccessResult.failed_count} resume(s) could not be processed</span>
+                                </div>
+                                <div className="max-h-32 overflow-y-auto pr-2 space-y-2">
+                                    {uploadSuccessResult.failures.map((failure, idx) => (
+                                        <div key={idx} className="bg-white/60 p-2 rounded text-sm text-red-900 shadow-sm">
+                                            <span className="font-medium">{failure.filename}</span>
+                                            <span className="text-red-700 ml-2">— {failure.reason}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex gap-4">
+                            <Button 
+                                variant="outline" 
+                                onClick={resetUpload}
+                                className="h-11 px-6"
+                            >
+                                Upload More
+                            </Button>
+                            <Link href="/dashboard/resume-library">
+                                <Button className="h-11 bg-orange-600 hover:bg-orange-700 text-white px-6">
+                                    View Resume Library <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </Link>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div 
+                        key="upload"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-col gap-4"
+                    >
+                        <div className="mb-6 flex justify-end">
+                            <Button
+                                onClick={handleProcessResumes}
+                                disabled={isProcessing}
+                                className="h-11 bg-orange-600 hover:bg-orange-700 text-white"
+                            >
+                                <CircleFadingArrowUpIcon className="mr-1 h-4 w-4" />
+                                {isProcessing ? "Processing..." : "Process Resumes"}
+                            </Button>
+                        </div>
+                        <Dropzone {...dropzone}>
+
                 <div>
 
                     <DropZoneArea>
@@ -194,6 +284,9 @@ export function ResumeUpload() {
                     ))}
                 </DropzoneFileList>
             </Dropzone>
+            </motion.div>
+            )}
+            </AnimatePresence>
         </div>
     );
 }

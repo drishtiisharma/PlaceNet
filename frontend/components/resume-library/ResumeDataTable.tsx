@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fetchApi, API_BASE_URL } from "@/lib/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,8 +70,8 @@ export function ResumeDataTable() {
                 sort_order: sortOrder
             });
             const [listRes, statsRes] = await Promise.all([
-                fetch(`http://127.0.0.1:8000/resume/library/list?${queryParams.toString()}`),
-                fetch(`http://127.0.0.1:8000/resume/stats`)
+                fetchApi(`/resume/library/list?${queryParams.toString()}`),
+                fetchApi(`/resume/stats`)
             ]);
             const listData = await listRes.json();
             const statsData = await statsRes.json();
@@ -113,7 +114,7 @@ export function ResumeDataTable() {
         
         const toastId = toast.loading("Deleting resumes...");
         try {
-            const res = await fetch("http://127.0.0.1:8000/resume/bulk-delete", {
+            const res = await fetchApi("/resume/bulk-delete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ resume_ids: Array.from(selectedIds) })
@@ -134,7 +135,7 @@ export function ResumeDataTable() {
         if (!confirm("Are you sure you want to delete this resume?")) return;
         
         try {
-            const res = await fetch(`http://127.0.0.1:8000/resume/${id}`, { method: "DELETE" });
+            const res = await fetchApi(`/resume/${id}`, { method: "DELETE" });
             if (res.ok) {
                 toast.success("Resume deleted.");
                 loadData();
@@ -249,10 +250,10 @@ export function ResumeDataTable() {
                                                 <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => window.open(`http://127.0.0.1:8000/resume/view/${resume.resume_id}`, "_blank")}>
+                                                <DropdownMenuItem onClick={() => window.open(`${API_BASE_URL}/resume/view/${resume.resume_id}`, "_blank")}>
                                                     <Eye className="mr-2 h-4 w-4" /> View Resume
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => window.open(`http://127.0.0.1:8000/resume/download/${resume.resume_id}`)}>
+                                                <DropdownMenuItem onClick={() => window.open(`${API_BASE_URL}/resume/download/${resume.resume_id}`)}>
                                                     <Download className="mr-2 h-4 w-4" /> Download
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />

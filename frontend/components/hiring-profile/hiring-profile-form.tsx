@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useRouter } from "next/navigation";
+import { fetchApi } from "@/lib/api";
 
 export interface HiringProfileData {
     job_title: string;
@@ -78,12 +79,12 @@ export function HiringProfileForm({
         console.log("Form State on Submit (API Request Payload):", formData);
         try {
             const url = profileId 
-                ? `http://127.0.0.1:8000/hiring-profile/${profileId}` 
-                : "http://127.0.0.1:8000/hiring-profile/";
+                ? `/hiring-profile/${profileId}` 
+                : "/hiring-profile/";
             
             const method = profileId ? "PUT" : "POST";
 
-            const res = await fetch(url, {
+            const res = await fetchApi(url, {
                 method: method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { fetchApi } from "@/lib/api";
 
 import { ChatHeader } from "@/components/ai-chat/chat-header";
 import { ChatLayout } from "@/components/ai-chat/chat-layout";
@@ -18,7 +19,7 @@ export default function AIChatPage() {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const loadSessionMessages = (id: string) => {
-        fetch(`http://127.0.0.1:8000/chat/sessions/${id}/messages`)
+        fetchApi(`/chat/sessions/${id}/messages`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {

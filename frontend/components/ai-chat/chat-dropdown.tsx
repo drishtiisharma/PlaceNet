@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, Plus, MessageSquare, Trash2, Edit2, MoreVertical } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { fetchApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -52,7 +53,7 @@ export function ChatDropdown({ currentSessionId, onSelectSession, onCreateNewCha
     const [editTitle, setEditTitle] = useState("");
 
     const fetchSessions = () => {
-        fetch("http://127.0.0.1:8000/chat/sessions")
+        fetchApi("/chat/sessions")
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) {
@@ -71,7 +72,7 @@ export function ChatDropdown({ currentSessionId, onSelectSession, onCreateNewCha
         if (!sessionToDelete) return;
         
         try {
-            await fetch(`http://127.0.0.1:8000/chat/sessions/${sessionToDelete}`, {
+            await fetchApi(`/chat/sessions/${sessionToDelete}`, {
                 method: "DELETE",
             });
             
@@ -94,7 +95,7 @@ export function ChatDropdown({ currentSessionId, onSelectSession, onCreateNewCha
         }
 
         try {
-            await fetch(`http://127.0.0.1:8000/chat/sessions/${id}`, {
+            await fetchApi(`/chat/sessions/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ title: editTitle }),

@@ -3,6 +3,11 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Bot, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github-dark.css";
+import { inter } from "@/lib/fonts";
 
 type ChatMessagesProps = {
     messages: Message[];
@@ -14,16 +19,7 @@ export type Message = {
     content: string;
 };
 
-// Simple regex to parse markdown links [Text](URL) into HTML anchor tags
-function parseMarkdownLinks(text: string) {
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    let html = text.replace(linkRegex, '<a href="$2" target="_blank" class="text-blue-500 hover:underline cursor-pointer">$1</a>');
-    
-    // basic newline to <br> for whitespace-pre-wrap effect
-    html = html.replace(/\n/g, '<br />');
-    
-    return html;
-}
+
 
 export function ChatMessages({
     messages,
@@ -31,7 +27,7 @@ export function ChatMessages({
 }: ChatMessagesProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     return (
-        <div ref={containerRef} className="flex w-full max-w-3xl flex-col gap-6 px-2 pt-4 pb-8">
+        <div ref={containerRef} className={`flex w-full max-w-3xl flex-col gap-6 px-2 pt-4 pb-8 ${inter.className}`}>
 
             {messages.map((message, index) => {
                 const isUser = message.role === "user";
@@ -48,15 +44,22 @@ export function ChatMessages({
                                 <Bot size={18} />
                             </div>
                         )}
-                        
-                        <div
-                            className={`max-w-[75%] rounded-3xl px-5 py-3 text-sm leading-7 break-words shadow-sm ${
-                                isUser
-                                    ? "bg-zinc-900 text-white rounded-tr-sm"
-                                    : "bg-zinc-100 text-zinc-900 rounded-tl-sm border"
-                            }`}
-                            dangerouslySetInnerHTML={{ __html: parseMarkdownLinks(message.content) }}
-                        />
+
+                        {isUser ? (
+                            <div
+                                className="max-w-[75%] rounded-3xl px-5 py-3 text-sm leading-7 break-words shadow-sm bg-orange-500 text-white rounded-tr-sm font-stretch-ultra-condensed"
+                                dangerouslySetInnerHTML={{ __html: message.content.replace(/\n/g, '<br />') }}
+                            />
+                        ) : (
+                            <div className="max-w-[75%] rounded-3xl px-5 py-3 text-sm leading-7 break-words shadow-sm bg-zinc-100 text-zinc-900 rounded-tl-sm border prose prose-neutral dark:prose-invert max-w-none">
+                                <ReactMarkdown
+                                    remarkPlugins={[remarkGfm]}
+                                    rehypePlugins={[rehypeHighlight]}
+                                >
+                                    {message.content}
+                                </ReactMarkdown>
+                            </div>
+                        )}
 
                         {isUser && (
                             <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-zinc-200 text-zinc-600 shadow-sm">
