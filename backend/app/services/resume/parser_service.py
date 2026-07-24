@@ -168,7 +168,7 @@ class ParserService:
 
     @staticmethod
     def _extract_phone(text: str) -> str:
-        match = re.search(r"(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}", text)
+        match = re.search(r"(?:(?:\+?\d{1,3}[-.\s]?))?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b", text)
         return match.group(0) if match else None
 
     @staticmethod

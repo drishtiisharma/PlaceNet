@@ -13,6 +13,7 @@ from typing import List
 
 from app.services.resume.resume_pipeline import ResumePipeline
 from app.services.resume.vector_service import VectorService
+from app.services.resume.storage_service import StorageService
 
 router = APIRouter(
     prefix="/resume",
@@ -110,11 +111,41 @@ def bulk_delete_resumes(request: BulkDeleteRequest, db: Session = Depends(get_db
             pdf = Path(candidate.resume_path)
             if pdf.exists():
                 pdf.unlink()
+            if candidate.resume_storage_path:
+                try:
+                    StorageService.delete_resume(candidate.resume_storage_path)
+                except Exception as e:
+                    logger.error(f"Failed to delete {candidate.resume_storage_path} from Supabase: {e}")
             db.delete(candidate)
             VectorService.delete_resume(resume_id)
             deleted_count += 1
     db.commit()
     return {"message": f"Deleted {deleted_count} resumes successfully."}
+
+@router.delete("/delete-all")
+def delete_all_resumes(db: Session = Depends(get_db)):
+    try:
+        # Delete all local files
+        candidates = db.query(CandidateProfile).all()
+        for candidate in candidates:
+            pdf = Path(candidate.resume_path)
+            if pdf.exists():
+                pdf.unlink()
+                
+        # Delete from Supabase
+        StorageService.delete_all_resumes()
+        
+        # Clear vector store (if supported by vector service, else loop)
+        for candidate in candidates:
+            VectorService.delete_resume(candidate.resume_id)
+            
+        # Delete from DB
+        db.query(CandidateProfile).delete()
+        db.commit()
+        return {"message": "All resumes deleted successfully."}
+    except Exception as e:
+        logger.error(f"Failed to delete all resumes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/stats")
 def get_resume_stats(db: Session = Depends(get_db)):
@@ -164,6 +195,13 @@ def delete_resume(resume_id: str, db: Session = Depends(get_db)):
     pdf = Path(candidate.resume_path)
     if pdf.exists():
         pdf.unlink()
+        
+    if candidate.resume_storage_path:
+        try:
+            StorageService.delete_resume(candidate.resume_storage_path)
+        except Exception as e:
+            logger.error(f"Failed to delete {candidate.resume_storage_path} from Supabase: {e}")
+            
     db.delete(candidate)
     db.commit()
     VectorService.delete_resume(resume_id)

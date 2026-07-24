@@ -6,6 +6,7 @@ import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill
 from datetime import datetime
 from app.database.models import HiringProfile, RankedCandidate, CandidateProfile
+from app.services.resume.storage_service import StorageService
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +49,8 @@ class ExportService:
 
         # Table Headers
         headers = [
-            "Rank", "Candidate Name", "Contact Number", "Match %",
-            "Skills Matched", "Missing Skills", "AI Summary", "Resume Hyperlink"
+            "Rank", "Candidate Name", "Contact Number", "Email", "Match %",
+            "Skills Matched", "Missing Skills", "AI Summary", "Resume"
         ]
         
         start_row = 6
@@ -60,19 +61,19 @@ class ExportService:
             cell.alignment = Alignment(horizontal="center")
             ws.column_dimensions[openpyxl.utils.get_column_letter(col_num)].width = 20
 
-        ws.column_dimensions["E"].width = 30 # Matched Skills
-        ws.column_dimensions["F"].width = 30 # Missing Skills
-        ws.column_dimensions["G"].width = 50 # AI Summary
-        ws.column_dimensions["H"].width = 30 # Hyperlink
+        ws.column_dimensions["E"].width = 15 # Match %
+        ws.column_dimensions["F"].width = 30 # Matched Skills
+        ws.column_dimensions["G"].width = 30 # Missing Skills
+        ws.column_dimensions["H"].width = 50 # AI Summary
+        ws.column_dimensions["I"].width = 30 # Resume
 
         # Write Data
         for idx, rc in enumerate(ranked_candidates, 1):
             # Fetch Candidate Profile
             cp = db.query(CandidateProfile).filter(CandidateProfile.resume_id == rc.resume_id).first()
             candidate_name = cp.full_name if cp else "Unknown"
-            
-            # Since no explicit contact is stored, we mark N/A as requested or check heuristic
-            contact_number = "N/A"
+            contact_number = cp.phone if cp and cp.phone else "N/A"
+            email = cp.email if cp and cp.email else "N/A"
             
             # Parse Ranking Data JSON
             ranking_data = {}
@@ -86,24 +87,37 @@ class ExportService:
             missing_skills = ", ".join(ranking_data.get("missing_skills", []))
             ai_summary = ranking_data.get("ai_summary", "")
             
-            resume_link = cp.resume_path if cp and cp.resume_path else "N/A"
+            signed_url = "N/A"
+            if cp and cp.resume_storage_path:
+                try:
+                    signed_url = StorageService.get_signed_url(cp.resume_storage_path) or "N/A"
+                except:
+                    pass
+
+            # Temporary logging as requested
+            logger.info(f"EXPORT DEBUG | Candidate ID: {rc.resume_id}")
+            logger.info(f"EXPORT DEBUG | Email: {email}")
+            logger.info(f"EXPORT DEBUG | Phone: {contact_number}")
+            logger.info(f"EXPORT DEBUG | Resume Storage Path: {cp.resume_storage_path if cp else None}")
+            logger.info(f"EXPORT DEBUG | Generated Signed URL: {signed_url}")
 
             row_data = [
                 idx,
                 candidate_name,
                 contact_number,
+                email,
                 f"{rc.match_score}%",
                 matched_skills,
                 missing_skills,
                 ai_summary,
-                resume_link
+                "Open Resume" if signed_url != "N/A" else "N/A"
             ]
 
             for col_num, cell_value in enumerate(row_data, 1):
                 cell = ws.cell(row=start_row + idx, column=col_num, value=cell_value)
                 cell.alignment = Alignment(vertical="top", wrap_text=True)
-                if col_num == 8 and resume_link != "N/A":
-                    cell.hyperlink = f"file:///{resume_link}" # Local file path mapping for now
+                if col_num == 9 and signed_url != "N/A":
+                    cell.hyperlink = signed_url
                     cell.font = Font(underline="single", color="0563C1")
 
         output = BytesIO()

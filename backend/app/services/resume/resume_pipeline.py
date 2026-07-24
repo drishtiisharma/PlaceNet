@@ -7,6 +7,7 @@ from .parser_service import ParserService
 from .chunk_service import ChunkService
 from .embedding_service import EmbeddingService
 from .vector_service import VectorService
+from .storage_service import StorageService
 
 
 class ResumePipeline:
@@ -74,7 +75,7 @@ class ResumePipeline:
                 )
                 logger.info(f"[{file.filename}] Resume parsed. Candidate: {parsed_resume.full_name}")
 
-                # Save original resume
+                # Save original resume locally (optional fallback or for immediate processing)
                 logger.info(f"[{file.filename}] Saving original resume...")
                 saved_path = FileService.save_file(
                     file_bytes=file_bytes,
@@ -82,6 +83,14 @@ class ResumePipeline:
                     full_name=parsed_resume.full_name
                 )
                 logger.info(f"[{file.filename}] Saved to {saved_path}")
+
+                # Upload to Supabase Storage
+                logger.info(f"[{file.filename}] Uploading to Supabase Storage...")
+                try:
+                    resume_storage_path = StorageService.upload_resume(file_bytes, file.filename)
+                except Exception as e:
+                    logger.error(f"[{file.filename}] Storage upload failed: {e}")
+                    raise RuntimeError(f"Storage upload failed: {e}")
 
                 # If DOCX, convert to PDF
                 if saved_path.suffix.lower() == ".docx":
@@ -135,6 +144,8 @@ class ResumePipeline:
                         id=str(db_uuid()),
                         resume_id=resume_id,
                         full_name=ext_name,
+                        email=parsed_resume.extracted_email,
+                        phone=parsed_resume.extracted_phone,
                         skills=ext_skills,
                         education=ext_education,
                         projects=ext_projects,
@@ -143,6 +154,7 @@ class ResumePipeline:
                         department=ext_department,
                         cgpa=ext_cgpa,
                         resume_path=str(saved_path),
+                        resume_storage_path=resume_storage_path,
                         original_filename=file.filename
                     )
                     db.add(db_candidate)
