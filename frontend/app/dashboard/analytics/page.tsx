@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { DepartmentDistribution } from "@/components/analytics/department-distribution";
 import { TopSkills } from "@/components/analytics/top-skills";
 import { ReportPreview } from "@/components/analytics/report-preview";
+import { MetricsCards } from "@/components/analytics/metrics-cards";
+import { QualityDistribution } from "@/components/analytics/quality-distribution";
+import { SkillsCategories } from "@/components/analytics/skills-categories";
+import { HiringProfileAnalytics } from "@/components/analytics/hiring-profile-analytics";
+import { ActionRequired } from "@/components/analytics/action-required";
+import { AIInsights } from "@/components/analytics/ai-insights";
 
 export default function AnalyticsPage() {
     const [data, setData] = useState<any>(null);
@@ -30,12 +36,26 @@ export default function AnalyticsPage() {
                 </p>
             </div>
 
+            <MetricsCards data={data} />
+            
+            <AIInsights insights={data.ai_insights} />
+
             <div className="grid gap-6 lg:grid-cols-2">
-                <DepartmentDistribution data={data.department_distribution} />
-                <TopSkills data={data.top_skills} />
+                <HiringProfileAnalytics data={data.hiring_profile_analytics} />
+                <ActionRequired data={data.action_required} />
             </div>
 
-            <ReportPreview />
+            <div className="grid gap-6 lg:grid-cols-2">
+                <QualityDistribution data={data.resume_quality_distribution} />
+                <SkillsCategories data={data.skills_categories} />
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+                <DepartmentDistribution data={data.department_distribution} />
+                <TopSkills data={data.top_skills} allSkills={data.all_skills} />
+            </div>
+
+            <ReportPreview hiringProfiles={data.hiring_profiles_list} />
         </div>
     );
-}
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { FileSpreadsheet } from "lucide-react";
 
 import {
@@ -10,39 +11,50 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 
-import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
-export function ReportPreview() {
+export function ReportPreview({ hiringProfiles }: { hiringProfiles: { id: string, title: string }[] }) {
+    const [selectedProfile, setSelectedProfile] = useState<string>("");
+    
+    const handleExport = () => {
+        if (!selectedProfile) return;
+        window.location.href = `http://127.0.0.1:8000/analytics/export/${selectedProfile}`;
+    };
+
     return (
-        <Card>
+        <Card className="col-span-full">
             <CardHeader>
-                <CardTitle>Report Preview</CardTitle>
+                <CardTitle>Report Export</CardTitle>
                 <CardDescription className="mb-2 mt-2">
-                    Export an Excel report containing analytics and student information.
-                    <p className="mt-2 mb-2">The exported report will include:</p>
-                    <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-                        <li>Department Distribution</li>
-                        <li>Top Skills</li>
-                        <li>Student Information</li>
-                    </ul>
+                    Export a detailed Excel report containing candidate rankings and AI summaries for a specific hiring profile.
                 </CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
-                <div className="mt-2 flex justify-end">
-                    <Button className="bg-orange-600 hover:bg-blue-600 text-white">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mt-2">
+                    <Select value={selectedProfile} onValueChange={setSelectedProfile}>
+                        <SelectTrigger className="w-[300px]">
+                            <SelectValue placeholder="Select a Hiring Profile" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {hiringProfiles && hiringProfiles.map(hp => (
+                                <SelectItem key={hp.id} value={hp.id}>
+                                    {hp.title}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    
+                    <Button 
+                        onClick={handleExport}
+                        disabled={!selectedProfile}
+                        className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
+                    >
+                        <FileSpreadsheet className="h-4 w-4" />
                         Export as XLSX
                     </Button>
                 </div>
-
             </CardContent>
-
-
         </Card>
     );
-
-
-
-
-
 }
