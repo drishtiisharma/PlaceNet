@@ -16,7 +16,7 @@ import { toast } from "sonner";
 export function CandidateFilters() {
     const { 
         hiringProfiles, selectedProfile, 
-        filters, setFilters, isLoading, setIsLoading, setRankedCandidates 
+        filters, setFilters, isLoading, setIsLoading, fetchCandidates 
     } = useCandidates();
 
     const selectedHp = hiringProfiles.find(p => p.id === selectedProfile);
@@ -35,22 +35,54 @@ export function CandidateFilters() {
         }
 
         setIsLoading(true);
+        let toastId = toast.loading("Starting ranking process...");
+
         try {
-            const res = await fetch(`http://127.0.0.1:8000/ranking/${selectedProfile}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ top_k: 20 }) // Defaulting to 20
+            const res = await fetch(`http://127.0.0.1:8000/ranking/${selectedProfile}/process`, {
+                method: "POST"
             });
 
-            if (res.ok) {
-                const data = await res.json();
-                setRankedCandidates(data);
-                toast.success("Candidates successfully ranked!");
-            } else {
-                toast.error("Failed to rank candidates.");
+            if (!res.ok) {
+                throw new Error("Failed to start ranking process.");
             }
+
+            const reader = res.body?.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            if (!reader) {
+                throw new Error("Failed to read response stream.");
+            }
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split("\n");
+                
+                for (const line of lines) {
+                    if (line.startsWith("data: ")) {
+                        try {
+                            const data = JSON.parse(line.substring(6));
+                            if (data.type === "progress") {
+                                toast.loading(`Ranking candidates... ${data.processed}/${data.total}`, { id: toastId });
+                            } else if (data.type === "complete") {
+                                toast.success("Candidates successfully ranked!", { id: toastId });
+                            } else if (data.type === "error") {
+                                toast.error(`Error: ${data.detail}`, { id: toastId });
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse SSE data", e);
+                        }
+                    }
+                }
+            }
+
+            // After process is complete, fetch the first page from results
+            await fetchCandidates(1);
+
         } catch (err) {
-            toast.error("An error occurred during ranking.");
+            toast.error("An error occurred during ranking.", { id: toastId });
             console.error("Error during ranking:", err);
         } finally {
             setIsLoading(false);

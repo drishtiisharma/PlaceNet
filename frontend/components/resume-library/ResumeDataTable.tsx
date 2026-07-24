@@ -50,8 +50,8 @@ export function ResumeDataTable() {
     const [cgpa, setCgpa] = useState("all");
 
     // Sorting
-    const [sortBy, setSortBy] = useState("created_at");
-    const [sortOrder, setSortOrder] = useState("desc");
+    const [sortBy, setSortBy] = useState("full_name");
+    const [sortOrder, setSortOrder] = useState("asc");
 
     // Selection
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -158,7 +158,17 @@ export function ResumeDataTable() {
         <div className="space-y-6">
             {/* Filter Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-2 flex-1">
+                <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center gap-2 bg-white border border-input px-3 py-2 rounded-md h-10">
+                        <input 
+                            type="checkbox" 
+                            id="selectAll"
+                            className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                            checked={resumes.length > 0 && selectedIds.size === resumes.length}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                        />
+                        <label htmlFor="selectAll" className="text-sm cursor-pointer select-none text-muted-foreground font-medium">Select All</label>
+                    </div>
                     <div className="relative w-72">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input 
@@ -198,17 +208,9 @@ export function ResumeDataTable() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[50px]">
-                                <input 
-                                    type="checkbox" 
-                                    className="w-4 h-4 rounded border-gray-300"
-                                    checked={resumes.length > 0 && selectedIds.size === resumes.length}
-                                    onChange={(e) => handleSelectAll(e.target.checked)}
-                                />
-                            </TableHead>
+                            <TableHead className="w-[100px]">S.No</TableHead>
                             <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('full_name')}>Name</TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('department')}>Domain</TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('created_at')}>Uploaded</TableHead>
+                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => handleSort('created_at')}>Uploaded On</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -226,23 +228,25 @@ export function ResumeDataTable() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            resumes.map(resume => (
+                            resumes.map((resume, index) => (
                                 <TableRow key={resume.resume_id} className={selectedIds.has(resume.resume_id) ? "bg-muted/50" : ""}>
                                     <TableCell>
-                                        <input 
-                                            type="checkbox" 
-                                            className="w-4 h-4 rounded border-gray-300"
-                                            checked={selectedIds.has(resume.resume_id)}
-                                            onChange={(e) => handleSelectOne(resume.resume_id, e.target.checked)}
-                                        />
+                                        <div className="flex items-center gap-3">
+                                            <input 
+                                                type="checkbox" 
+                                                className="w-4 h-4 rounded border-gray-300"
+                                                checked={selectedIds.has(resume.resume_id)}
+                                                onChange={(e) => handleSelectOne(resume.resume_id, e.target.checked)}
+                                            />
+                                            <span className="font-medium text-muted-foreground">{(page - 1) * limit + index + 1}</span>
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="font-medium">{resume.full_name || 'Unknown'}</div>
                                         <div className="text-xs text-muted-foreground">{resume.original_filename}</div>
                                     </TableCell>
-                                    <TableCell>{resume.department || '-'}</TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
-                                        {new Date(resume.created_at).toLocaleDateString()}
+                                        {new Date(resume.created_at).toLocaleDateString()} {new Date(resume.created_at).toLocaleTimeString('en-GB')}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <DropdownMenu>

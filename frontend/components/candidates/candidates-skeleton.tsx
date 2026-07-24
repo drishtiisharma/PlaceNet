@@ -16,11 +16,12 @@ export function CandidatesSkeleton() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>S.No</TableHead>
+                        <TableHead>Rank</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Resume</TableHead>
                         <TableHead>AI Score</TableHead>
+                        <TableHead>Skills Match</TableHead>
+                        <TableHead>AI Summary</TableHead>
+                        <TableHead>Resume</TableHead>
                         <TableHead className="text-right">
                             Action
                         </TableHead>
@@ -44,6 +45,10 @@ export function CandidatesSkeleton() {
 
                             <TableCell>
                                 <Skeleton className="h-9 w-20 rounded-md" />
+                            </TableCell>
+
+                            <TableCell>
+                                <Skeleton className="h-4 w-12" />
                             </TableCell>
 
                             <TableCell>

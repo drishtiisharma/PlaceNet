@@ -30,12 +30,12 @@ export interface HiringProfileData {
     job_summary?: string | null;
 }
 
-export function HiringProfileForm({ 
-    initialData, 
-    profileId, 
-    onSuccess 
-}: { 
-    initialData?: HiringProfileData, 
+export function HiringProfileForm({
+    initialData,
+    profileId,
+    onSuccess
+}: {
+    initialData?: HiringProfileData,
     profileId?: string,
     onSuccess?: () => void
 }) {
@@ -56,7 +56,7 @@ export function HiringProfileForm({
     });
 
     const [isSaving, setIsSaving] = useState(false);
-    
+
     // In case initialData changes without remounting
     useEffect(() => {
         if (initialData) {
@@ -78,10 +78,10 @@ export function HiringProfileForm({
         setIsSaving(true);
         console.log("Form State on Submit (API Request Payload):", formData);
         try {
-            const url = profileId 
-                ? `/hiring-profile/${profileId}` 
+            const url = profileId
+                ? `/hiring-profile/${profileId}`
                 : "/hiring-profile/";
-            
+
             const method = profileId ? "PUT" : "POST";
 
             const res = await fetchApi(url, {
@@ -89,7 +89,7 @@ export function HiringProfileForm({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
             });
-            
+
             const resData = await res.json().catch(() => ({}));
             console.log("API Response:", resData);
 
@@ -99,7 +99,7 @@ export function HiringProfileForm({
             }
             toast.success(`Hiring Profile ${profileId ? 'updated' : 'saved'} successfully!`);
             if (onSuccess) onSuccess();
-            router.push("/dashboard/hiring-profiles");
+            router.push("/dashboard/hiring-profile");
         } catch (error) {
             console.error("Error saving profile:", error);
             toast.error("An unexpected error occurred while saving.");
@@ -113,47 +113,47 @@ export function HiringProfileForm({
             <FieldGroup>
                 <Field>
                     <FieldLabel>Job Title</FieldLabel>
-                    <Input 
-                        value={formData.job_title || ""} 
-                        onChange={e => handleChange("job_title", e.target.value)} 
-                        placeholder="Frontend Developer" 
-                        required 
+                    <Input
+                        value={formData.job_title || ""}
+                        onChange={e => handleChange("job_title", e.target.value)}
+                        placeholder="Frontend Developer"
+                        required
                     />
                 </Field>
 
                 <Field>
                     <FieldLabel>Company</FieldLabel>
-                    <Input 
-                        value={formData.company || ""} 
-                        onChange={e => handleChange("company", e.target.value)} 
-                        placeholder="Company Name" 
+                    <Input
+                        value={formData.company || ""}
+                        onChange={e => handleChange("company", e.target.value)}
+                        placeholder="Company Name"
                     />
                 </Field>
 
                 <Field>
                     <FieldLabel>Experience</FieldLabel>
-                    <Input 
-                        value={formData.experience || ""} 
-                        onChange={e => handleChange("experience", e.target.value)} 
-                        placeholder="2+ Years" 
+                    <Input
+                        value={formData.experience || ""}
+                        onChange={e => handleChange("experience", e.target.value)}
+                        placeholder="2+ Years"
                     />
                 </Field>
-                
+
                 <Field>
                     <FieldLabel>Education</FieldLabel>
-                    <Input 
-                        value={formData.education || ""} 
-                        onChange={e => handleChange("education", e.target.value)} 
-                        placeholder="Bachelor's in CS" 
+                    <Input
+                        value={formData.education || ""}
+                        onChange={e => handleChange("education", e.target.value)}
+                        placeholder="Bachelor's in CS"
                     />
                 </Field>
-                
+
                 <Field>
                     <FieldLabel>CGPA Requirement</FieldLabel>
-                    <Input 
-                        value={formData.cgpa_requirement || ""} 
-                        onChange={e => handleChange("cgpa_requirement", e.target.value)} 
-                        placeholder="7.5+" 
+                    <Input
+                        value={formData.cgpa_requirement || ""}
+                        onChange={e => handleChange("cgpa_requirement", e.target.value)}
+                        placeholder="7.5+"
                     />
                 </Field>
 
@@ -166,7 +166,7 @@ export function HiringProfileForm({
                         placeholder="React, TypeScript, Next.js..."
                     />
                 </Field>
-                
+
                 <Field>
                     <FieldLabel>Preferred Skills (comma separated)</FieldLabel>
                     <Textarea
@@ -176,22 +176,22 @@ export function HiringProfileForm({
                         placeholder="Node.js, GraphQL..."
                     />
                 </Field>
-                
+
                 <Field>
                     <FieldLabel>Eligible Departments (comma separated)</FieldLabel>
-                    <Input 
+                    <Input
                         value={(formData.eligible_departments || []).join(", ")}
                         onChange={e => handleStringList("eligible_departments", e.target.value)}
-                        placeholder="CSE, IT..." 
+                        placeholder="CSE, IT..."
                     />
                 </Field>
-                
+
                 <Field>
                     <FieldLabel>Certifications (comma separated)</FieldLabel>
-                    <Input 
+                    <Input
                         value={(formData.certifications || []).join(", ")}
                         onChange={e => handleStringList("certifications", e.target.value)}
-                        placeholder="AWS Certified..." 
+                        placeholder="AWS Certified..."
                     />
                 </Field>
 
@@ -204,16 +204,16 @@ export function HiringProfileForm({
                         placeholder="Describe the responsibilities..."
                     />
                 </Field>
-                
+
                 <Field>
                     <FieldLabel>Keywords (comma separated)</FieldLabel>
-                    <Input 
+                    <Input
                         value={(formData.keywords || []).join(", ")}
                         onChange={e => handleStringList("keywords", e.target.value)}
-                        placeholder="Frontend, Web..." 
+                        placeholder="Frontend, Web..."
                     />
                 </Field>
-                
+
                 <Field>
                     <FieldLabel>Job Summary</FieldLabel>
                     <Textarea

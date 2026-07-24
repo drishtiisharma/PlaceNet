@@ -12,7 +12,7 @@ from .vector_service import VectorService
 class ResumePipeline:
 
     @staticmethod
-    async def process_resumes(files: List[UploadFile]) -> dict:
+    async def process_resumes(files: List[UploadFile]):
         """
         Complete Resume Processing Pipeline
 
@@ -48,6 +48,14 @@ class ResumePipeline:
 
         for file in files:
             logger.info(f"Starting processing for file: {file.filename}")
+            
+            yield {
+                "type": "progress",
+                "processed": processed,
+                "failed": failed_count,
+                "total": len(files),
+                "current_file": file.filename
+            }
 
             try:
                 # Read file only once
@@ -171,6 +179,14 @@ class ResumePipeline:
 
                 processed += 1
                 logger.info(f"[{file.filename}] Finished processing file successfully")
+                
+                yield {
+                    "type": "progress",
+                    "processed": processed,
+                    "failed": failed_count,
+                    "total": len(files),
+                    "current_file": file.filename
+                }
 
             except Exception as e:
                 import traceback
@@ -181,6 +197,14 @@ class ResumePipeline:
                     "filename": file.filename,
                     "reason": f"{type(e).__name__}: {str(e)}"
                 })
+                
+                yield {
+                    "type": "progress",
+                    "processed": processed,
+                    "failed": failed_count,
+                    "total": len(files),
+                    "current_file": file.filename
+                }
 
         logger.info(f"Pipeline complete. Processed {processed}/{len(files)} files. Failed: {failed_count}")
         status = "success"
@@ -189,10 +213,13 @@ class ResumePipeline:
         elif failed_count > 0 and processed == 0:
             status = "failed"
 
-        return {
-            "status": status,
-            "processed_resumes": processed,
-            "failed_count": failed_count,
-            "total_uploaded": len(files),
-            "failures": failures
+        yield {
+            "type": "complete",
+            "result": {
+                "status": status,
+                "processed_resumes": processed,
+                "failed_count": failed_count,
+                "total_uploaded": len(files),
+                "failures": failures
+            }
         }

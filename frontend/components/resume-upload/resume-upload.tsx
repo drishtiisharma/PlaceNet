@@ -75,7 +75,7 @@ export function ResumeUpload() {
             });
 
             setIsProcessing(true);
-            const processingToastId = toast.loading(`Processing ${uploadedFiles.length} resumes...`);
+            const processingToastId = toast.loading(`Processing resumes... 0/${uploadedFiles.length} processed`);
 
             const response = await fetch(
                 `${BACKEND_URL}/resume/process`,
@@ -94,8 +94,51 @@ export function ResumeUpload() {
                 return;
             }
 
-            const result = await response.json();
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            if (!reader) {
+                throw new Error("Response body is not readable");
+            }
+
+            let result = null;
+            let buffer = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n\n");
+                
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    if (line.startsWith("data: ")) {
+                        const dataStr = line.substring(6);
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.type === "progress") {
+                                toast.loading(`Processing resumes... ${data.processed + data.failed}/${data.total} processed`, {
+                                    id: processingToastId
+                                });
+                            } else if (data.type === "complete") {
+                                result = data.result;
+                            } else if (data.type === "error") {
+                                throw new Error(data.detail);
+                            }
+                        } catch (e) {
+                            console.error("Error parsing SSE data", e);
+                        }
+                    }
+                }
+            }
+
             toast.dismiss(processingToastId);
+
+            if (!result) {
+                throw new Error("Did not receive complete result from server.");
+            }
 
             if (result.status === "success" || result.status === "partial_success") {
                 if (result.processed_resumes > 0) {

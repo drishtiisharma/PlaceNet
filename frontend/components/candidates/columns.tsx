@@ -63,13 +63,13 @@ export const columns: ColumnDef<RankingResult>[] = [
         id: "skills",
         header: "Skills Match",
         cell: ({ row }) => {
-            const { 
-                matched_skills, missing_skills, preferred_skills_present, 
-                missing_requirements, additional_relevant_skills, ai_summary 
+            const {
+                matched_skills, missing_skills, preferred_skills_present,
+                missing_requirements, additional_relevant_skills, ai_summary
             } = row.original;
-            
+
             const isFailed = ai_summary?.includes("Summary could not be generated");
-            
+
             // Note: Skills match is computed deterministically, so we always show it 
             // even if the LLM AI Summary fails. We do not exit early.
 
@@ -154,7 +154,7 @@ export const columns: ColumnDef<RankingResult>[] = [
     },
     {
         id: "actions",
-        header: "",
+        header: "Actions",
         cell: ({ row }) => {
             return <CandidateActions candidate={row.original as any} />;
         },

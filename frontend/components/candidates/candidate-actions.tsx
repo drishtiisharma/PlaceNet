@@ -30,11 +30,6 @@ export function CandidateActions({
 
             <DropdownMenuContent align="end" className="w-48">
 
-                <DropdownMenuItem onClick={() => window.open(`http://127.0.0.1:8000/resume/view/${candidate.resume_id}`, "_blank")}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Resume
-                </DropdownMenuItem>
-
                 <DropdownMenuItem>
                     <Download className="mr-2 h-4 w-4" />
                     Download Resume

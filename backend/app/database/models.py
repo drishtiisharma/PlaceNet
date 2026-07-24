@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, JSON, DateTime
+from sqlalchemy import Column, String, Text, JSON, DateTime, Integer
 from datetime import datetime, timezone
 from app.database.connection import Base
 
@@ -63,4 +63,14 @@ class RankingExplanationCache(Base):
     resume_id = Column(String, index=True)
     hiring_profile_id = Column(String, index=True)
     explanation_data = Column(JSON)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+class RankedCandidate(Base):
+    __tablename__ = "ranked_candidates"
+
+    id = Column(String, primary_key=True, index=True)
+    hiring_profile_id = Column(String, index=True)
+    resume_id = Column(String, index=True)
+    match_score = Column(Integer)
+    ranking_data = Column(JSON)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

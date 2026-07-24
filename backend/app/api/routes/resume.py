@@ -29,9 +29,19 @@ async def process_resumes(
 ):
     try:
         logger.info(f"Received request to process {len(files)} resumes.")
-        result = await ResumePipeline.process_resumes(files)
-        logger.info(f"Resume processing successful: {result}")
-        return result
+        
+        from fastapi.responses import StreamingResponse
+        import json
+        
+        async def event_generator():
+            try:
+                async for event in ResumePipeline.process_resumes(files):
+                    yield f"data: {json.dumps(event)}\n\n"
+            except Exception as e:
+                logger.error(f"Error in processing stream: {e}", exc_info=True)
+                yield f"data: {json.dumps({'type': 'error', 'detail': str(e)})}\n\n"
+
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     except Exception as e:
         logger.error(f"Error processing resumes: {e}", exc_info=True)

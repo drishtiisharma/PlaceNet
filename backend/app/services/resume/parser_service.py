@@ -75,8 +75,27 @@ class ParserService:
 
     @staticmethod
     def _parse_pdf(file_bytes: bytes) -> str:
+        import pytesseract
+        from PIL import Image
+        import logging
+
         pdf = fitz.open(stream=file_bytes, filetype="pdf")
-        pages = [page.get_text() for page in pdf]
+        pages = []
+        for i, page in enumerate(pdf):
+            page_text = page.get_text()
+            meaningful_chars = len(page_text.replace(" ", "").replace("\n", ""))
+            
+            if meaningful_chars < 30:
+                try:
+                    pix = page.get_pixmap(dpi=300)
+                    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                    ocr_text = pytesseract.image_to_string(img)
+                    pages.append(ocr_text)
+                except Exception as e:
+                    logging.error(f"OCR failed for page {i}: {e}")
+                    pages.append(page_text)
+            else:
+                pages.append(page_text)
         pdf.close()
         return "\n".join(pages)
 
