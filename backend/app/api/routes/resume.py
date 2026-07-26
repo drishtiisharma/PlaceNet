@@ -13,6 +13,7 @@ from typing import List
 
 from app.services.resume.resume_pipeline import ResumePipeline
 from app.services.resume.vector_service import VectorService
+from app.api.deps import get_current_user_id
 from app.services.resume.storage_service import StorageService
 
 router = APIRouter(
@@ -26,7 +27,8 @@ logger = logging.getLogger(__name__)
 
 @router.post("/process")
 async def process_resumes(
-    files: List[UploadFile] = File(...)
+    files: List[UploadFile] = File(...),
+    current_user_id: str = Depends(get_current_user_id)
 ):
     try:
         logger.info(f"Received request to process {len(files)} resumes.")
@@ -36,7 +38,7 @@ async def process_resumes(
         
         async def event_generator():
             try:
-                async for event in ResumePipeline.process_resumes(files):
+                async for event in ResumePipeline.process_resumes(files, current_user_id):
                     yield f"data: {json.dumps(event)}\n\n"
             except Exception as e:
                 logger.error(f"Error in processing stream: {e}", exc_info=True)
@@ -72,9 +74,10 @@ def list_resumes(
     skill: str = "",
     sort_by: str = "created_at",
     sort_order: str = "desc",
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user_id: str = Depends(get_current_user_id)
 ):
-    query = db.query(CandidateProfile)
+    query = db.query(CandidateProfile).filter(CandidateProfile.user_id == current_user_id)
     
     if search:
         query = query.filter(or_(
@@ -103,10 +106,10 @@ def list_resumes(
     }
 
 @router.post("/bulk-delete")
-def bulk_delete_resumes(request: BulkDeleteRequest, db: Session = Depends(get_db)):
+def bulk_delete_resumes(request: BulkDeleteRequest, db: Session = Depends(get_db), current_user_id: str = Depends(get_current_user_id)):
     deleted_count = 0
     for resume_id in request.resume_ids:
-        candidate = db.query(CandidateProfile).filter(CandidateProfile.resume_id == resume_id).first()
+        candidate = db.query(CandidateProfile).filter(CandidateProfile.resume_id == resume_id, CandidateProfile.user_id == current_user_id).first()
         if candidate:
             pdf = Path(candidate.resume_path)
             if pdf.exists():
@@ -123,24 +126,24 @@ def bulk_delete_resumes(request: BulkDeleteRequest, db: Session = Depends(get_db
     return {"message": f"Deleted {deleted_count} resumes successfully."}
 
 @router.delete("/delete-all")
-def delete_all_resumes(db: Session = Depends(get_db)):
+def delete_all_resumes(db: Session = Depends(get_db), current_user_id: str = Depends(get_current_user_id)):
     try:
         # Delete all local files
-        candidates = db.query(CandidateProfile).all()
+        candidates = db.query(CandidateProfile).filter(CandidateProfile.user_id == current_user_id).all()
         for candidate in candidates:
             pdf = Path(candidate.resume_path)
             if pdf.exists():
                 pdf.unlink()
                 
         # Delete from Supabase
-        StorageService.delete_all_resumes()
+        StorageService.delete_all_resumes(current_user_id)
         
         # Clear vector store (if supported by vector service, else loop)
         for candidate in candidates:
             VectorService.delete_resume(candidate.resume_id)
             
         # Delete from DB
-        db.query(CandidateProfile).delete()
+        db.query(CandidateProfile).filter(CandidateProfile.user_id == current_user_id).delete()
         db.commit()
         return {"message": "All resumes deleted successfully."}
     except Exception as e:
@@ -148,9 +151,9 @@ def delete_all_resumes(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/stats")
-def get_resume_stats(db: Session = Depends(get_db)):
-    total = db.query(CandidateProfile).count()
-    last_indexed = db.query(CandidateProfile).order_by(desc(CandidateProfile.created_at)).first()
+def get_resume_stats(db: Session = Depends(get_db), current_user_id: str = Depends(get_current_user_id)):
+    total = db.query(CandidateProfile).filter(CandidateProfile.user_id == current_user_id).count()
+    last_indexed = db.query(CandidateProfile).filter(CandidateProfile.user_id == current_user_id).order_by(desc(CandidateProfile.created_at)).first()
     return {
         "total": total,
         "indexed": total,
@@ -159,8 +162,8 @@ def get_resume_stats(db: Session = Depends(get_db)):
     }
 
 @router.get("/view/{resume_id}")
-def view_resume(resume_id: str, db: Session = Depends(get_db)):
-    candidate = db.query(CandidateProfile).filter(CandidateProfile.resume_id == resume_id).first()
+def view_resume(resume_id: str, db: Session = Depends(get_db), current_user_id: str = Depends(get_current_user_id)):
+    candidate = db.query(CandidateProfile).filter(CandidateProfile.resume_id == resume_id, CandidateProfile.user_id == current_user_id).first()
     
     error_html = """
     <html><body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #f9fafb; margin: 0;">
@@ -181,15 +184,15 @@ def view_resume(resume_id: str, db: Session = Depends(get_db)):
     return FileResponse(path=candidate.resume_path, media_type="application/pdf", filename=candidate.original_filename, content_disposition_type="inline")
 
 @router.get("/download/{resume_id}")
-def download_resume(resume_id: str, db: Session = Depends(get_db)):
-    candidate = db.query(CandidateProfile).filter(CandidateProfile.resume_id == resume_id).first()
+def download_resume(resume_id: str, db: Session = Depends(get_db), current_user_id: str = Depends(get_current_user_id)):
+    candidate = db.query(CandidateProfile).filter(CandidateProfile.resume_id == resume_id, CandidateProfile.user_id == current_user_id).first()
     if not candidate:
         raise HTTPException(status_code=404, detail="Resume not found.")
     return FileResponse(path=candidate.resume_path, filename=candidate.original_filename)
 
 @router.delete("/{resume_id}")
-def delete_resume(resume_id: str, db: Session = Depends(get_db)):
-    candidate = db.query(CandidateProfile).filter(CandidateProfile.resume_id == resume_id).first()
+def delete_resume(resume_id: str, db: Session = Depends(get_db), current_user_id: str = Depends(get_current_user_id)):
+    candidate = db.query(CandidateProfile).filter(CandidateProfile.resume_id == resume_id, CandidateProfile.user_id == current_user_id).first()
     if not candidate:
         raise HTTPException(status_code=404, detail="Resume not found.")
     pdf = Path(candidate.resume_path)

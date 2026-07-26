@@ -12,6 +12,7 @@ import { Menu } from "lucide-react";
 import AppSheet from "./app-sheet";
 import { landingNav } from "./navigation";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 import {
     NavigationMenu,
     NavigationMenuItem,
@@ -24,6 +25,49 @@ import {
 export default function LandingNavbar() {
     const pathname = usePathname();
     const [activeSection, setActiveSection] = useState("");
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const [greetingData, setGreetingData] = useState<{time: string, name: string} | null>(null);
+
+    useEffect(() => {
+        const supabase = createClient();
+        
+        const updateGreeting = (user: any) => {
+            if (!user) {
+                setGreetingData(null);
+                return;
+            }
+            let name = "";
+            if (user.user_metadata?.full_name) {
+                name = user.user_metadata.full_name.split(" ")[0];
+            }
+            const currentHour = new Date().getHours();
+            let timeGreeting = "";
+            
+            if (currentHour >= 5 && currentHour < 12) {
+                timeGreeting = "Good Morning 🌅";
+            } else if (currentHour >= 12 && currentHour < 17) {
+                timeGreeting = "Good Afternoon ☀️";
+            } else if (currentHour >= 17 && currentHour < 21) {
+                timeGreeting = "Good Evening 🌆";
+            } else {
+                timeGreeting = "Good Night 🌙";
+            }
+            
+            setGreetingData({ time: timeGreeting, name: name || "Hello!" });
+        };
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setIsAuthenticated(!!session);
+            updateGreeting(session?.user);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsAuthenticated(!!session);
+            updateGreeting(session?.user);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     useEffect(() => {
         // Only run scroll spy on the homepage
@@ -65,23 +109,25 @@ export default function LandingNavbar() {
                 <div className="flex items-center gap-3">
 
                     {/* Sidebar Button (currently visual only) */}
-                    <Sheet>
+                    {isAuthenticated && (
+                        <Sheet>
 
-                        <SheetTrigger asChild>
+                            <SheetTrigger asChild>
 
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-lg"
-                            >
-                                <Menu className="h-5 w-5" />
-                            </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="rounded-lg"
+                                >
+                                    <Menu className="h-5 w-5" />
+                                </Button>
 
-                        </SheetTrigger>
+                            </SheetTrigger>
 
-                        <AppSheet />
+                            <AppSheet />
 
-                    </Sheet>
+                        </Sheet>
+                    )}
 
                     {/* Logo */}
                     <Link
@@ -130,32 +176,53 @@ export default function LandingNavbar() {
 
                 {/* Right */}
                 <div className="hidden items-center gap-3 lg:flex">
-
-                    <Button
-                        className="bg-orange-500 hover:bg-orange-600"
-                        asChild
-                    >
-                        <Link href="/auth">
-                            Login / Sign Up
-                        </Link>
-                    </Button>
-
+                    {isAuthenticated === null ? null : isAuthenticated ? (
+                        <div className="flex items-center justify-center">
+                            {greetingData && (
+                                <span className="text-lg font-bold tracking-tight text-gray-800">
+                                    {greetingData.name === "Hello!" ? greetingData.name : `${greetingData.time}, `}
+                                    {greetingData.name !== "Hello!" && (
+                                        <span className="text-orange-500">{greetingData.name}</span>
+                                    )}
+                                </span>
+                            )}
+                        </div>
+                    ) : (
+                        <Button
+                            className="bg-orange-500 hover:bg-orange-600"
+                            asChild
+                        >
+                            <Link href="/auth">
+                                Login / Sign Up
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Mobile Buttons */}
-
                 <div className="flex items-center gap-2 lg:hidden">
-
-                    <Button
-                        size="sm"
-                        className="bg-orange-500 hover:bg-orange-600"
-                        asChild
-                    >
-                        <Link href="/auth">
-                            Login / Sign Up
-                        </Link>
-                    </Button>
-
+                    {isAuthenticated === null ? null : isAuthenticated ? (
+                        <div className="flex items-center justify-center">
+                            {greetingData && (
+                                <span className="text-base font-bold tracking-tight text-gray-800">
+                                    {greetingData.name === "Hello!" ? greetingData.name : `${greetingData.time}, `}
+                                    {greetingData.name !== "Hello!" && (
+                                        <span className="text-orange-500">{greetingData.name}</span>
+                                    )}
+                                </span>
+                            )}
+                        </div>
+                    ) : (
+                        <Button
+                            size="sm"
+                            className="bg-orange-500 hover:bg-orange-600"
+                            asChild
+                        >
+                            <Link href="/auth">
+                                Login / Sign Up
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
             </div>

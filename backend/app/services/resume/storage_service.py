@@ -20,7 +20,7 @@ class StorageService:
         return bucket
 
     @classmethod
-    def upload_resume(cls, file_bytes: bytes, original_filename: str) -> str:
+    def upload_resume(cls, file_bytes: bytes, original_filename: str, user_id: str) -> str:
         """Uploads a resume to Supabase Storage and returns the storage path."""
         try:
             client = cls.get_client()
@@ -28,7 +28,7 @@ class StorageService:
             
             # Generate UUID for the filename while preserving extension
             ext = os.path.splitext(original_filename)[1]
-            unique_filename = f"{uuid.uuid4()}{ext}"
+            unique_filename = f"{user_id}/{uuid.uuid4()}{ext}"
             
             response = client.storage.from_(bucket).upload(
                 path=unique_filename,
@@ -59,18 +59,18 @@ class StorageService:
             raise
 
     @classmethod
-    def delete_all_resumes(cls):
-        """Deletes all resumes from the Supabase bucket."""
+    def delete_all_resumes(cls, user_id: str):
+        """Deletes all resumes for the given user from the Supabase bucket."""
         try:
             client = cls.get_client()
             bucket = cls.get_bucket_name()
             
-            files = client.storage.from_(bucket).list()
+            files = client.storage.from_(bucket).list(user_id)
             if files:
-                file_paths = [f['name'] for f in files if f['name'] != '.emptyFolderPlaceholder']
+                file_paths = [f"{user_id}/{f['name']}" for f in files if f['name'] != '.emptyFolderPlaceholder']
                 if file_paths:
                     client.storage.from_(bucket).remove(file_paths)
-            logger.info(f"Successfully deleted all resumes from Supabase bucket {bucket}")
+            logger.info(f"Successfully deleted all resumes for user {user_id} from Supabase bucket {bucket}")
         except Exception as e:
             logger.error(f"Failed to delete all resumes from Supabase: {e}")
             raise

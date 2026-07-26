@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { fetchApi } from "@/lib/api";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -37,23 +38,38 @@ export function ResumeActions({
             <DropdownMenuContent align="end">
 
                 <DropdownMenuItem
-                    onClick={() =>
-                        window.open(
-                            `${BACKEND_URL}/resume/view/${resumeId}`,
-                            "_blank"
-                        )
-                    }
+                    onClick={async () => {
+                        try {
+                            const res = await fetchApi(`/resume/view/${resumeId}`);
+                            if (!res.ok) throw new Error("Failed to view");
+                            const blob = await res.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            window.open(url, "_blank");
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }}
                 >
                     <Eye className="mr-2 h-4 w-4" />
                     View
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
-                    onClick={() =>
-                        window.open(
-                            `${BACKEND_URL}/resume/download/${resumeId}`
-                        )
-                    }
+                    onClick={async () => {
+                        try {
+                            const res = await fetchApi(`/resume/download/${resumeId}`);
+                            if (!res.ok) throw new Error("Failed to download");
+                            const blob = await res.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = `resume-${resumeId}.pdf`;
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }}
                 >
                     <Download className="mr-2 h-4 w-4" />
                     Download
@@ -69,8 +85,8 @@ export function ResumeActions({
                 <DropdownMenuItem
                     variant="destructive"
                     onClick={async () => {
-                        await fetch(
-                            `${BACKEND_URL}/resume/${resumeId}`,
+                        await fetchApi(
+                            `/resume/${resumeId}`,
                             {
                                 method: "DELETE",
                             }

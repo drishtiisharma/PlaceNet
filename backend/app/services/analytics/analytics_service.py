@@ -12,32 +12,33 @@ logger = logging.getLogger(__name__)
 
 class AnalyticsService:
     @staticmethod
-    def get_dashboard_analytics(db: Session) -> Dict[str, Any]:
+    def get_dashboard_analytics(db: Session, user_id: str) -> Dict[str, Any]:
         # SQL Aggregations
         # Basic Counts
-        total_resumes = db.query(CandidateProfile).count()
-        total_hiring_profiles = db.query(HiringProfile).count()
-        hiring_profiles_all = db.query(HiringProfile).all()
+        total_resumes = db.query(CandidateProfile).filter(CandidateProfile.user_id == user_id).count()
+        total_hiring_profiles = db.query(HiringProfile).filter(HiringProfile.user_id == user_id).count()
+        hiring_profiles_all = db.query(HiringProfile).filter(HiringProfile.user_id == user_id).all()
         hiring_profiles_list = [{"id": hp.id, "title": hp.job_title} for hp in hiring_profiles_all]
 
         # Parsing Failed & Successfully Parsed
         parsing_failed = db.query(CandidateProfile).filter(
-            (CandidateProfile.full_name.is_(None)) | (CandidateProfile.full_name == '')
+            CandidateProfile.user_id == user_id,
+            ((CandidateProfile.full_name.is_(None)) | (CandidateProfile.full_name == ''))
         ).count()
         successfully_parsed = total_resumes - parsing_failed
 
         # Missing Projects & Missing GitHub
         missing_projects_res = db.execute(text(
-            "SELECT COUNT(*) FROM candidate_profiles WHERE json_array_length(projects) = 0"
+            f"SELECT COUNT(*) FROM candidate_profiles WHERE json_array_length(projects) = 0 AND user_id = '{user_id}'"
         )).scalar()
 
         missing_github_res = db.execute(text(
-            "SELECT COUNT(*) FROM candidate_profiles WHERE projects NOT LIKE '%github.com%' AND experience NOT LIKE '%github.com%'"
+            f"SELECT COUNT(*) FROM candidate_profiles WHERE projects NOT LIKE '%github.com%' AND experience NOT LIKE '%github.com%' AND user_id = '{user_id}'"
         )).scalar()
         
         # Hiring Profile Analytics (from RankedCandidate)
         ranked_stats = db.execute(text(
-            "SELECT AVG(match_score) as avg, MAX(match_score) as max, MIN(match_score) as min, COUNT(*) as count FROM ranked_candidates"
+            f"SELECT AVG(match_score) as avg, MAX(match_score) as max, MIN(match_score) as min, COUNT(*) as count FROM ranked_candidates WHERE user_id = '{user_id}'"
         )).fetchone()
         
         avg_match = round(ranked_stats.avg, 2) if ranked_stats and ranked_stats.avg else 0.0
@@ -49,10 +50,10 @@ class AnalyticsService:
         average_resume_quality = avg_match
         
         # Quality/Match Distribution
-        count_gt_80 = db.execute(text("SELECT COUNT(*) FROM ranked_candidates WHERE match_score >= 80")).scalar() or 0
-        count_60_79 = db.execute(text("SELECT COUNT(*) FROM ranked_candidates WHERE match_score >= 60 AND match_score < 80")).scalar() or 0
-        count_40_59 = db.execute(text("SELECT COUNT(*) FROM ranked_candidates WHERE match_score >= 40 AND match_score < 60")).scalar() or 0
-        count_lt_40 = db.execute(text("SELECT COUNT(*) FROM ranked_candidates WHERE match_score < 40")).scalar() or 0
+        count_gt_80 = db.execute(text(f"SELECT COUNT(*) FROM ranked_candidates WHERE match_score >= 80 AND user_id = '{user_id}'")).scalar() or 0
+        count_60_79 = db.execute(text(f"SELECT COUNT(*) FROM ranked_candidates WHERE match_score >= 60 AND match_score < 80 AND user_id = '{user_id}'")).scalar() or 0
+        count_40_59 = db.execute(text(f"SELECT COUNT(*) FROM ranked_candidates WHERE match_score >= 40 AND match_score < 60 AND user_id = '{user_id}'")).scalar() or 0
+        count_lt_40 = db.execute(text(f"SELECT COUNT(*) FROM ranked_candidates WHERE match_score < 40 AND user_id = '{user_id}'")).scalar() or 0
         
         resume_quality_distribution = [
             {"name": "0-39 (Needs Improvement)", "value": count_lt_40},
@@ -65,13 +66,13 @@ class AnalyticsService:
         skill_counts = Counter()
         try:
             # Try using json_each if available
-            skills_res = db.execute(text("SELECT value FROM candidate_profiles, json_each(skills)")).fetchall()
+            skills_res = db.execute(text(f"SELECT value FROM candidate_profiles, json_each(skills) WHERE user_id = '{user_id}'")).fetchall()
             for row in skills_res:
                 skill_counts[row[0].title()] += 1
         except Exception as e:
             # Fallback if json_each is not supported
             logger.warning(f"Failed to use json_each: {e}. Falling back to in-memory JSON parsing.")
-            candidates = db.query(CandidateProfile.skills).all()
+            candidates = db.query(CandidateProfile.skills).filter(CandidateProfile.user_id == user_id).all()
             for c in candidates:
                 if isinstance(c.skills, list):
                     for skill in c.skills:
@@ -120,7 +121,7 @@ class AnalyticsService:
         trend_counts = Counter()
         avg_cgpa_list = []
         
-        all_candidates = db.query(CandidateProfile).all()
+        all_candidates = db.query(CandidateProfile).filter(CandidateProfile.user_id == user_id).all()
         for c in all_candidates:
             if c.cgpa:
                 try:
@@ -165,7 +166,7 @@ class AnalyticsService:
                 "missing_github": missing_github_res or 0,
                 "missing_projects": missing_projects_res or 0,
                 "parsing_failures": parsing_failed,
-                "below_50_match": db.execute(text("SELECT COUNT(*) FROM ranked_candidates WHERE match_score < 50")).scalar() or 0
+                "below_50_match": db.execute(text(f"SELECT COUNT(*) FROM ranked_candidates WHERE match_score < 50 AND user_id = '{user_id}'")).scalar() or 0
             },
             # Backward compatibility fields
             "average_cgpa": round(avg_cgpa, 2),
@@ -175,8 +176,8 @@ class AnalyticsService:
         }
         
         # fix the 50-80 specific counts for hiring profile analytics
-        count_50_80_strict = db.execute(text("SELECT COUNT(*) FROM ranked_candidates WHERE match_score >= 50 AND match_score < 80")).scalar() or 0
-        count_lt_50_strict = db.execute(text("SELECT COUNT(*) FROM ranked_candidates WHERE match_score < 50")).scalar() or 0
+        count_50_80_strict = db.execute(text(f"SELECT COUNT(*) FROM ranked_candidates WHERE match_score >= 50 AND match_score < 80 AND user_id = '{user_id}'")).scalar() or 0
+        count_lt_50_strict = db.execute(text(f"SELECT COUNT(*) FROM ranked_candidates WHERE match_score < 50 AND user_id = '{user_id}'")).scalar() or 0
         stats["hiring_profile_analytics"]["count_50_80"] = count_50_80_strict
         stats["hiring_profile_analytics"]["count_lt_50"] = count_lt_50_strict
         

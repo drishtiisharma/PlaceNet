@@ -15,17 +15,17 @@ logger = logging.getLogger(__name__)
 
 class RankingService:
     @staticmethod
-    async def process_all_candidates_stream(db: Session, hiring_profile_id: str):
+    async def process_all_candidates_stream(db: Session, hiring_profile_id: str, user_id: str):
         # Delete existing RankedCandidate for this profile to start fresh
-        db.query(RankedCandidate).filter(RankedCandidate.hiring_profile_id == hiring_profile_id).delete()
+        db.query(RankedCandidate).filter(RankedCandidate.hiring_profile_id == hiring_profile_id, RankedCandidate.user_id == user_id).delete()
         db.commit()
 
-        hp = db.query(HiringProfile).filter(HiringProfile.id == hiring_profile_id).first()
+        hp = db.query(HiringProfile).filter(HiringProfile.id == hiring_profile_id, HiringProfile.user_id == user_id).first()
         if not hp:
             yield {"type": "error", "detail": "Hiring Profile not found"}
             return
 
-        all_candidates = db.query(CandidateProfile).all()
+        all_candidates = db.query(CandidateProfile).filter(CandidateProfile.user_id == user_id).all()
         total_candidates = len(all_candidates)
         if total_candidates == 0:
             yield {"type": "complete"}
@@ -161,6 +161,7 @@ class RankingService:
                 
                 db_rc = RankedCandidate(
                     id=str(uuid.uuid4()),
+                    user_id=user_id,
                     hiring_profile_id=hp.id,
                     resume_id=r_id,
                     match_score=item["score"],
@@ -175,14 +176,15 @@ class RankingService:
         yield {"type": "complete"}
 
     @staticmethod
-    def get_paginated_results(db: Session, hiring_profile_id: str, page: int, limit: int) -> dict:
-        total = db.query(RankedCandidate).filter(RankedCandidate.hiring_profile_id == hiring_profile_id).count()
+    def get_paginated_results(db: Session, hiring_profile_id: str, page: int, limit: int, user_id: str) -> dict:
+        total = db.query(RankedCandidate).filter(RankedCandidate.hiring_profile_id == hiring_profile_id, RankedCandidate.user_id == user_id).count()
         
         offset = (page - 1) * limit
         ranked_records = db.query(RankedCandidate, CandidateProfile).join(
             CandidateProfile, RankedCandidate.resume_id == CandidateProfile.resume_id
         ).filter(
-            RankedCandidate.hiring_profile_id == hiring_profile_id
+            RankedCandidate.hiring_profile_id == hiring_profile_id,
+            RankedCandidate.user_id == user_id
         ).order_by(
             RankedCandidate.match_score.desc()
         ).offset(offset).limit(limit).all()

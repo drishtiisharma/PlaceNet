@@ -19,11 +19,12 @@ class HiringProfileService:
         return hiring_profile_data
 
     @staticmethod
-    def create_profile(db: Session, profile: HiringProfileCreate) -> HiringProfile:
+    def create_profile(db: Session, profile: HiringProfileCreate, user_id: str) -> HiringProfile:
         profile_id = str(uuid4())
         
         db_profile = HiringProfile(
             id=profile_id,
+            user_id=user_id,
             job_title=profile.job_title,
             company=profile.company,
             required_skills=profile.required_skills,
@@ -53,8 +54,8 @@ class HiringProfileService:
         return db_profile
 
     @staticmethod
-    def update_profile(db: Session, profile_id: str, profile_update: HiringProfileCreate) -> HiringProfile:
-        db_profile = db.query(HiringProfile).filter(HiringProfile.id == profile_id).first()
+    def update_profile(db: Session, profile_id: str, profile_update: HiringProfileCreate, user_id: str) -> HiringProfile:
+        db_profile = db.query(HiringProfile).filter(HiringProfile.id == profile_id, HiringProfile.user_id == user_id).first()
         if not db_profile:
             return None
         
@@ -87,16 +88,16 @@ class HiringProfileService:
         return db_profile
 
     @staticmethod
-    def get_profiles(db: Session):
-        return db.query(HiringProfile).all()
+    def get_profiles(db: Session, user_id: str):
+        return db.query(HiringProfile).filter(HiringProfile.user_id == user_id).all()
 
     @staticmethod
-    def get_profile(db: Session, profile_id: str):
-        return db.query(HiringProfile).filter(HiringProfile.id == profile_id).first()
+    def get_profile(db: Session, profile_id: str, user_id: str):
+        return db.query(HiringProfile).filter(HiringProfile.id == profile_id, HiringProfile.user_id == user_id).first()
 
     @staticmethod
-    def delete_profile(db: Session, profile_id: str):
-        profile = db.query(HiringProfile).filter(HiringProfile.id == profile_id).first()
+    def delete_profile(db: Session, profile_id: str, user_id: str):
+        profile = db.query(HiringProfile).filter(HiringProfile.id == profile_id, HiringProfile.user_id == user_id).first()
         if profile:
             db.delete(profile)
             db.commit()

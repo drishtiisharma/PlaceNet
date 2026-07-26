@@ -3,6 +3,7 @@
 import { toast } from "sonner";
 
 import { useState } from "react";
+import { fetchApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
     Field,
@@ -26,7 +27,7 @@ export function AIAutofillPanel() {
             const formData = new FormData();
             formData.append("file", file);
             
-            const response = await fetch("http://127.0.0.1:8000/hiring-profile/parse", {
+            const response = await fetchApi("/hiring-profile/parse", {
                 method: "POST",
                 body: formData,
             });

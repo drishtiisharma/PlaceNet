@@ -12,15 +12,16 @@ logger = logging.getLogger(__name__)
 
 class ExportService:
     @staticmethod
-    def generate_hiring_profile_report(db: Session, hiring_profile_id: str) -> BytesIO:
+    def generate_hiring_profile_report(db: Session, hiring_profile_id: str, user_id: str) -> BytesIO:
         # Fetch Profile
-        hp = db.query(HiringProfile).filter(HiringProfile.id == hiring_profile_id).first()
+        hp = db.query(HiringProfile).filter(HiringProfile.id == hiring_profile_id, HiringProfile.user_id == user_id).first()
         if not hp:
             raise ValueError(f"Hiring profile {hiring_profile_id} not found.")
 
         # Fetch Ranked Candidates for this Profile
         ranked_candidates = db.query(RankedCandidate).filter(
-            RankedCandidate.hiring_profile_id == hiring_profile_id
+            RankedCandidate.hiring_profile_id == hiring_profile_id,
+            RankedCandidate.user_id == user_id
         ).order_by(RankedCandidate.match_score.desc()).all()
 
         wb = openpyxl.Workbook()
@@ -70,7 +71,7 @@ class ExportService:
         # Write Data
         for idx, rc in enumerate(ranked_candidates, 1):
             # Fetch Candidate Profile
-            cp = db.query(CandidateProfile).filter(CandidateProfile.resume_id == rc.resume_id).first()
+            cp = db.query(CandidateProfile).filter(CandidateProfile.resume_id == rc.resume_id, CandidateProfile.user_id == user_id).first()
             candidate_name = cp.full_name if cp else "Unknown"
             contact_number = cp.phone if cp and cp.phone else "N/A"
             email = cp.email if cp and cp.email else "N/A"

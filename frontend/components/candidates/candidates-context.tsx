@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
+import { fetchApi } from "@/lib/api";
 
 export type RankingResult = {
     resume_id: string;
@@ -73,7 +74,7 @@ export function CandidatesProvider({ children }: { children: React.ReactNode }) 
 
     // Fetch hiring profiles on mount
     React.useEffect(() => {
-        fetch("http://127.0.0.1:8000/hiring-profile/")
+        fetchApi("/hiring-profile/")
             .then(res => res.json())
             .then(data => setHiringProfiles(data))
             .catch(err => console.error(err));
@@ -83,7 +84,7 @@ export function CandidatesProvider({ children }: { children: React.ReactNode }) 
         if (!selectedProfile) return;
         setIsLoading(true);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/ranking/${selectedProfile}/results`, {
+            const res = await fetchApi(`/ranking/${selectedProfile}/results`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ page: pageToFetch, limit: 20 })

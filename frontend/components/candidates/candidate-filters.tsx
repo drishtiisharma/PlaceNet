@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCandidates } from "./candidates-context";
 import { toast } from "sonner";
+import { fetchApi } from "@/lib/api";
 
 export function CandidateFilters() {
     const { 
@@ -38,7 +39,7 @@ export function CandidateFilters() {
         let toastId = toast.loading("Starting ranking process...");
 
         try {
-            const res = await fetch(`http://127.0.0.1:8000/ranking/${selectedProfile}/process`, {
+            const res = await fetchApi(`/ranking/${selectedProfile}/process`, {
                 method: "POST"
             });
 

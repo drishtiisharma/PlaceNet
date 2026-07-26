@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from app.database.connection import get_db
+from app.api.deps import get_current_user_id
 from app.database.models import CandidateProfile
 from app.services.resume.vector_service import VectorService
 from app.services.resume.embedding_service import EmbeddingService
@@ -17,7 +18,7 @@ class SearchQuery(BaseModel):
     top_k: int = 10
 
 @router.post("/")
-def search_resumes(search_req: SearchQuery, db: Session = Depends(get_db)):
+def search_resumes(search_req: SearchQuery, db: Session = Depends(get_db), current_user_id: str = Depends(get_current_user_id)):
     query = search_req.query
     if not query.strip():
         return []
@@ -40,7 +41,10 @@ def search_resumes(search_req: SearchQuery, db: Session = Depends(get_db)):
             return []
 
         # Fetch matched candidates from DB
-        candidates = db.query(CandidateProfile).filter(CandidateProfile.resume_id.in_(resume_ids)).all()
+        candidates = db.query(CandidateProfile).filter(
+            CandidateProfile.resume_id.in_(resume_ids),
+            CandidateProfile.user_id == current_user_id
+        ).all()
         
         # Format like /resume/library return type
         results = []

@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import { fetchApi } from "@/lib/api";
 
 interface ParsedProfileDialogProps {
     resumeId: string | null;
@@ -33,7 +34,7 @@ export function ParsedProfileDialog({ resumeId, open, onOpenChange }: ParsedProf
     const loadProfile = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`http://127.0.0.1:8000/resume/library/list?search=${resumeId}`);
+            const res = await fetchApi(`/resume/library/list?search=${resumeId}`);
             const data = await res.json();
             // Since we can't easily fetch a single profile by ID without a dedicated endpoint right now,
             // we'll filter it from the list. (Alternatively, we could have a /resume/{id} endpoint).

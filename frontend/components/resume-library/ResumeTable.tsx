@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ResumeSkeleton } from "./ResumeSkeleton";
+import { fetchApi } from "@/lib/api";
 import { ResumeRow } from "./ResumeRow";
 
 type Resume = {
@@ -23,13 +24,13 @@ export function ResumeTable({ query }: { query?: string }) {
             try {
                 let response;
                 if (query && query.trim() !== "") {
-                    response = await fetch("http://localhost:8000/search/", {
+                    response = await fetchApi("/search/", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ query, top_k: 10 })
+                        body: JSON.stringify({ query: query, top_k: 10 })
                     });
                 } else {
-                    response = await fetch("http://localhost:8000/resume/library");
+                    response = await fetchApi("/resume/library");
                 }
 
                 const data = await response.json();

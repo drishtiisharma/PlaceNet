@@ -6,6 +6,7 @@ class HiringProfile(Base):
     __tablename__ = "hiring_profiles"
 
     id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, index=True)
     job_title = Column(String, index=True)
     company = Column(String, nullable=True)
     required_skills = Column(JSON, default=[])
@@ -25,6 +26,7 @@ class CandidateProfile(Base):
     __tablename__ = "candidate_profiles"
 
     id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, index=True)
     resume_id = Column(String, index=True)
     full_name = Column(String, index=True)
     skills = Column(JSON, default=[])
@@ -47,6 +49,7 @@ class ChatSession(Base):
     __tablename__ = "chat_sessions"
 
     id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, index=True)
     title = Column(String, default="New Chat")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -55,6 +58,7 @@ class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
     id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, index=True)
     session_id = Column(String, index=True)
     role = Column(String) # 'user' or 'assistant'
     content = Column(Text)
@@ -64,6 +68,7 @@ class RankingExplanationCache(Base):
     __tablename__ = "ranking_explanations"
 
     id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, index=True)
     resume_id = Column(String, index=True)
     hiring_profile_id = Column(String, index=True)
     explanation_data = Column(JSON)
@@ -73,6 +78,7 @@ class RankedCandidate(Base):
     __tablename__ = "ranked_candidates"
 
     id = Column(String, primary_key=True, index=True)
+    user_id = Column(String, index=True)
     hiring_profile_id = Column(String, index=True)
     resume_id = Column(String, index=True)
     match_score = Column(Integer)

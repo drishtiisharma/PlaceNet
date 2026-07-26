@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +19,7 @@ export default function ForgotPassword() {
     setIsLoading(true)
     setError('')
     setMessage('')
-    
+
     const supabase = createClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -35,12 +34,7 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="w-full sm:mx-auto sm:max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col items-center mb-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-orange-600 shadow-sm border border-orange-100">
-          <Shield className="h-6 w-6" />
-        </div>
-      </div>
+    <div className="w-full sm:mx-auto sm:max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500 mt-12">
       <Card className="w-full border-gray-200/60 shadow-xl shadow-gray-200/20 backdrop-blur-sm bg-white/95">
         <CardHeader>
           <CardTitle className="text-2xl">Forgot Password</CardTitle>
@@ -55,7 +49,7 @@ export default function ForgotPassword() {
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="johndoe@example.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

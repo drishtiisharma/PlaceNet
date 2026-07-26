@@ -8,6 +8,7 @@ import { AttachmentButton } from "./attachment-button";
 import { SendButton } from "./send-button";
 import { UploadedFile } from "./uploaded-file";
 import { Message } from "./chat-messages";
+import { fetchApi } from "@/lib/api";
 
 type PromptBoxProps = {
     messages: Message[];
@@ -57,7 +58,7 @@ export function PromptBox({
         if (setIsTyping) setIsTyping(true);
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/chat", {
+            const response = await fetchApi("/chat", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

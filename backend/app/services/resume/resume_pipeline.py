@@ -13,7 +13,7 @@ from .storage_service import StorageService
 class ResumePipeline:
 
     @staticmethod
-    async def process_resumes(files: List[UploadFile]):
+    async def process_resumes(files: List[UploadFile], user_id: str):
         """
         Complete Resume Processing Pipeline
 
@@ -87,7 +87,7 @@ class ResumePipeline:
                 # Upload to Supabase Storage
                 logger.info(f"[{file.filename}] Uploading to Supabase Storage...")
                 try:
-                    resume_storage_path = StorageService.upload_resume(file_bytes, file.filename)
+                    resume_storage_path = StorageService.upload_resume(file_bytes, file.filename, user_id)
                 except Exception as e:
                     logger.error(f"[{file.filename}] Storage upload failed: {e}")
                     raise RuntimeError(f"Storage upload failed: {e}")
@@ -142,6 +142,7 @@ class ResumePipeline:
                 try:
                     db_candidate = CandidateProfile(
                         id=str(db_uuid()),
+                        user_id=user_id,
                         resume_id=resume_id,
                         full_name=ext_name,
                         email=parsed_resume.extracted_email,

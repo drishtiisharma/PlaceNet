@@ -23,7 +23,7 @@ export function AuthView() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  
+
   // UI states
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -53,7 +53,7 @@ export function AuthView() {
         setIsLoading(false)
         return
       }
-      
+
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -105,7 +105,7 @@ export function AuthView() {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-start bg-gradient-to-b from-white via-white to-orange-50/30 p-12 lg:p-20 border-r border-gray-100 relative overflow-hidden">
         {/* Background Blur */}
         <div className="absolute left-1/2 top-1/2 h-[450px] w-[450px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-100 blur-[120px] opacity-50 pointer-events-none" />
-        
+
         <div className="relative z-10">
           <Badge
             variant="secondary"
@@ -115,13 +115,13 @@ export function AuthView() {
           </Badge>
 
           <h1 className="max-w-xl text-4xl font-bold tracking-tight lg:text-5xl text-black">
-            <TypewriterText 
+            <TypewriterText
               segments={[
                 { text: "Find the right candidate." },
-                { 
-                  text: "Faster. Smarter. Effortlessly.", 
-                  className: "mt-2 text-orange-500", 
-                  isBlock: true 
+                {
+                  text: "Faster. Smarter. Effortlessly.",
+                  className: "mt-2 text-orange-500",
+                  isBlock: true
                 }
               ]}
             />
@@ -152,8 +152,8 @@ export function AuthView() {
             {isLogin ? 'Welcome to PlaceNet AI' : 'Create your PlaceNet AI account'}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            {isLogin 
-              ? 'Sign in to continue finding, ranking, and hiring the right candidates with AI.' 
+            {isLogin
+              ? 'Sign in to continue finding, ranking, and hiring the right candidates with AI.'
               : 'Join PlaceNet AI and start discovering, ranking, and hiring top talent with intelligent AI-powered recruitment.'}
           </p>
         </div>
@@ -183,7 +183,7 @@ export function AuthView() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="bg-white/50"
-              placeholder="m@example.com"
+              placeholder="johndoe@example.com"
             />
           </div>
 
@@ -272,7 +272,7 @@ export function AuthView() {
           <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={isLoading}>
             {isLoading ? (isLogin ? 'Logging in...' : 'Signing up...') : (isLogin ? 'Log In' : 'Sign Up')}
           </Button>
-          
+
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-200" />

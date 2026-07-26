@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { fetchApi } from "@/lib/api";
 import { CircleFadingArrowUpIcon } from "lucide-react";
 
 
@@ -77,13 +78,10 @@ export function ResumeUpload() {
             setIsProcessing(true);
             const processingToastId = toast.loading(`Processing resumes... 0/${uploadedFiles.length} processed`);
 
-            const response = await fetch(
-                `${BACKEND_URL}/resume/process`,
-                {
-                    method: "POST",
-                    body: formData,
-                }
-            );
+            const response = await fetchApi("/resume/process", {
+                method: "POST",
+                body: formData,
+            });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));

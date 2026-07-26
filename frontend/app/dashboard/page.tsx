@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { DepartmentDistribution } from "@/components/analytics/department-distribution";
 import { TopSkills } from "@/components/analytics/top-skills";
 import { UploadTrends } from "@/components/analytics/upload-trends";
@@ -24,7 +25,10 @@ export default function DashboardPage() {
 
     return (
         <div className="flex flex-col gap-6 p-6">
-            <h1 className="text-3xl font-bold tracking-tight">Recruiter Dashboard</h1>
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Recruiter Dashboard</h1>
+                <p className="text-muted-foreground mt-1">Overview of all candidate and placement metrics.</p>
+            </div>
             
             <div className="grid auto-rows-min gap-4 md:grid-cols-4">
                 <Card>
