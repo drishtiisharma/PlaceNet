@@ -78,6 +78,24 @@ class ParserService:
         import pytesseract
         from PIL import Image
         import logging
+        import os
+        import shutil
+
+        # Configure Tesseract path (check env var first, then common Windows paths)
+        tesseract_cmd = os.environ.get("TESSERACT_CMD")
+        if tesseract_cmd:
+            pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+        elif os.name == 'nt':
+            if not shutil.which("tesseract"):
+                common_paths = [
+                    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                    os.path.expanduser(r"~\AppData\Local\Programs\Tesseract-OCR\tesseract.exe")
+                ]
+                for path in common_paths:
+                    if os.path.exists(path):
+                        pytesseract.pytesseract.tesseract_cmd = path
+                        break
 
         pdf = fitz.open(stream=file_bytes, filetype="pdf")
         pages = []
@@ -87,10 +105,18 @@ class ParserService:
             
             if meaningful_chars < 30:
                 try:
-                    pix = page.get_pixmap(dpi=300)
+                    pix = page.get_pixmap(dpi=300, alpha=False)
                     img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
                     ocr_text = pytesseract.image_to_string(img)
                     pages.append(ocr_text)
+                except pytesseract.TesseractNotFoundError:
+                    error_msg = (
+                        "Tesseract-OCR is not installed or not found. "
+                        "Please install it from https://github.com/UB-Mannheim/tesseract/wiki (Windows) "
+                        "and ensure it is in your PATH, or set the TESSERACT_CMD environment variable."
+                    )
+                    logging.error(error_msg)
+                    raise RuntimeError(error_msg)
                 except Exception as e:
                     logging.error(f"OCR failed for page {i}: {e}")
                     pages.append(page_text)
