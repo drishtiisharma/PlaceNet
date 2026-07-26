@@ -17,3 +17,14 @@ backend/chroma_db/
 node_modules/
 .next/
 
+# ChromaDB
+backend/backend/chroma_db/
+
+# Uploaded resumes
+backend/backend/uploads/
+
+# Local SQLite database
+backend/backend/sql_app.db
+
+# Environment
+backend/.env
