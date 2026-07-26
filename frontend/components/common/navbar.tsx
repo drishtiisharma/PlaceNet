@@ -132,20 +132,11 @@ export default function LandingNavbar() {
                 <div className="hidden items-center gap-3 lg:flex">
 
                     <Button
-                        variant="ghost"
-                        asChild
-                    >
-                        <Link href="/dashboard">
-                            Login
-                        </Link>
-                    </Button>
-
-                    <Button
                         className="bg-orange-500 hover:bg-orange-600"
                         asChild
                     >
-                        <Link href="/dashboard">
-                            Sign Up
+                        <Link href="/auth">
+                            Login / Sign Up
                         </Link>
                     </Button>
 
@@ -158,8 +149,11 @@ export default function LandingNavbar() {
                     <Button
                         size="sm"
                         className="bg-orange-500 hover:bg-orange-600"
+                        asChild
                     >
-                        Sign Up
+                        <Link href="/auth">
+                            Login / Sign Up
+                        </Link>
                     </Button>
 
                 </div>
