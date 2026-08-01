@@ -15,6 +15,16 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Resume = {
     resume_id: string;
@@ -55,6 +65,12 @@ export function ResumeDataTable() {
 
     // Selection
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    // Deletion Modal States
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
+    const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const loadData = async () => {
         setLoading(true);
@@ -109,9 +125,12 @@ export function ResumeDataTable() {
         setSelectedIds(newSet);
     };
 
-    const handleBulkDelete = async () => {
-        if (!confirm(`Are you sure you want to delete ${selectedIds.size} resumes?`)) return;
-        
+    const confirmBulkDelete = () => {
+        setBulkDeleteConfirmOpen(true);
+    };
+
+    const executeBulkDelete = async () => {
+        setIsDeleting(true);
         const toastId = toast.loading("Deleting resumes...");
         try {
             const res = await fetchApi("/resume/bulk-delete", {
@@ -128,20 +147,84 @@ export function ResumeDataTable() {
             }
         } catch (error) {
             toast.error("An error occurred.", { id: toastId });
+        } finally {
+            setIsDeleting(false);
+            setBulkDeleteConfirmOpen(false);
         }
     };
 
-    const handleDeleteOne = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this resume?")) return;
-        
+    const handleViewResume = async (resumeId: string) => {
+        const toastId = toast.loading("Opening resume...");
+        const newWindow = window.open('about:blank', '_blank');
         try {
-            const res = await fetchApi(`/resume/${id}`, { method: "DELETE" });
+            const res = await fetchApi(`/resume/view/${resumeId}`);
+            if (res.status === 401 || res.status === 403) {
+                toast.error("Session expired. Please log in again.", { id: toastId });
+                newWindow?.close();
+                return;
+            }
+            if (!res.ok) throw new Error("Failed to view");
+            
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            if (newWindow) {
+                newWindow.location.href = url;
+            } else {
+                window.location.href = url;
+            }
+            toast.dismiss(toastId);
+        } catch (error) {
+            newWindow?.close();
+            toast.error("Failed to open resume.", { id: toastId });
+        }
+    };
+
+    const handleDownloadResume = async (resumeId: string, filename: string) => {
+        const toastId = toast.loading("Downloading resume...");
+        try {
+            const res = await fetchApi(`/resume/download/${resumeId}`);
+            if (res.status === 401 || res.status === 403) {
+                toast.error("Session expired. Please log in again.", { id: toastId });
+                return;
+            }
+            if (!res.ok) throw new Error("Failed to download");
+            
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename || `resume-${resumeId}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            toast.dismiss(toastId);
+        } catch (error) {
+            toast.error("Failed to download resume.", { id: toastId });
+        }
+    };
+
+    const confirmDeleteOne = (id: string) => {
+        setResumeToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const executeDeleteOne = async () => {
+        if (!resumeToDelete) return;
+        setIsDeleting(true);
+        const toastId = toast.loading("Deleting resume...");
+        try {
+            const res = await fetchApi(`/resume/${resumeToDelete}`, { method: "DELETE" });
             if (res.ok) {
-                toast.success("Resume deleted.");
+                toast.success("Resume deleted.", { id: toastId });
                 loadData();
+            } else {
+                toast.error("Failed to delete.", { id: toastId });
             }
         } catch (error) {
-            toast.error("Failed to delete.");
+            toast.error("Failed to delete.", { id: toastId });
+        } finally {
+            setIsDeleting(false);
+            setDeleteConfirmOpen(false);
+            setResumeToDelete(null);
         }
     };
 
@@ -196,7 +279,7 @@ export function ResumeDataTable() {
                     <span className="text-sm font-medium text-orange-800">{selectedIds.size} resume(s) selected</span>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>Clear Selection</Button>
-                        <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                        <Button variant="destructive" size="sm" onClick={confirmBulkDelete}>
                             <Trash2 className="h-4 w-4 mr-2" /> Delete Selected
                         </Button>
                     </div>
@@ -254,14 +337,14 @@ export function ResumeDataTable() {
                                                 <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => window.open(`${API_BASE_URL}/resume/view/${resume.resume_id}`, "_blank")}>
+                                                <DropdownMenuItem onClick={() => handleViewResume(resume.resume_id)}>
                                                     <Eye className="mr-2 h-4 w-4" /> View Resume
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => window.open(`${API_BASE_URL}/resume/download/${resume.resume_id}`)}>
+                                                <DropdownMenuItem onClick={() => handleDownloadResume(resume.resume_id, resume.original_filename)}>
                                                     <Download className="mr-2 h-4 w-4" /> Download
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem variant="destructive" onClick={() => handleDeleteOne(resume.resume_id)}>
+                                                <DropdownMenuItem variant="destructive" onClick={() => confirmDeleteOne(resume.resume_id)}>
                                                     <Trash2 className="mr-2 h-4 w-4" /> Delete
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -301,6 +384,51 @@ export function ResumeDataTable() {
                     </div>
                 </div>
             </div>
+
+            {/* Modals */}
+            <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this resume? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={(e) => { e.preventDefault(); executeDeleteOne(); }} 
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={bulkDeleteConfirmOpen} onOpenChange={setBulkDeleteConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Multiple Resumes</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete {selectedIds.size} resumes? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={(e) => { e.preventDefault(); executeBulkDelete(); }} 
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
         </div>
     );

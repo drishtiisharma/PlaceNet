@@ -42,6 +42,7 @@ class CandidateProfile(Base):
     resume_storage_path = Column(String, nullable=True)
     resume_path = Column(String, nullable=True)
     original_filename = Column(String, nullable=True)
+    content_hash = Column(String, index=True, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

@@ -40,7 +40,10 @@ class ParserService:
 
         text = text.strip()
         if not text:
-            raise ValueError("No readable text found in resume.")
+            raise ValueError("This resume appears to be blank or contains no readable text. Please upload a valid resume.")
+
+        if not ParserService._is_valid_resume_content(text):
+            raise ValueError("The uploaded document does not appear to be a resume. Please upload a valid resume in PDF, DOCX, or image format.")
 
         from app.services.resume.name_extractor import NameExtractor
         name = NameExtractor.extract(text, filename)
@@ -249,3 +252,17 @@ class ParserService:
         if chunk:
             res.append(chunk.strip())
         return res
+
+    @staticmethod
+    def _is_valid_resume_content(text: str) -> bool:
+        text_lower = text.lower()
+        
+        has_edu = any(re.search(r"\b" + re.escape(kw) + r"\b", text_lower) for kw in ["education", "academic", "university", "college", "bachelor", "master", "degree", "b.tech", "b.sc", "b.a"])
+        has_exp = any(re.search(r"\b" + re.escape(kw) + r"\b", text_lower) for kw in ["experience", "employment", "work history", "professional"])
+        has_skills = any(re.search(r"\b" + re.escape(kw) + r"\b", text_lower) for kw in ["skills", "technologies", "tools", "languages"])
+        has_proj = any(re.search(r"\b" + re.escape(kw) + r"\b", text_lower) for kw in ["projects", "certifications", "achievements", "summary", "objective", "profile"])
+        
+        # A document is considered a valid resume if it contains at least two distinct standard resume sections
+        categories_found = sum([has_edu, has_exp, has_skills, has_proj])
+        
+        return categories_found >= 2

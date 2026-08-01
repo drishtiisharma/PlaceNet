@@ -8,7 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle, Camera } from "lucide-react";
+import { UserCircle, Camera, Loader2 } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { fetchApi } from "@/lib/api";
 
@@ -18,6 +28,7 @@ export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [newPassword, setNewPassword] = useState("");
     const [originalName, setOriginalName] = useState("");
     const router = useRouter();
@@ -82,10 +93,6 @@ export default function ProfilePage() {
     };
 
     const handleDeleteAccount = async () => {
-        if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your data.")) {
-            return;
-        }
-
         setIsDeleting(true);
         const supabase = createClient();
         try {
@@ -109,6 +116,7 @@ export default function ProfilePage() {
             router.push("/auth");
         } catch (error: any) {
             toast.error(error.message || "Failed to delete account");
+            setDeleteConfirmOpen(false);
         } finally {
             setIsDeleting(false);
         }
@@ -196,12 +204,34 @@ export default function ProfilePage() {
                     )}
                     
                     {!isEditing && (
-                        <Button variant="destructive" onClick={handleDeleteAccount} disabled={isDeleting}>
+                        <Button variant="destructive" onClick={() => setDeleteConfirmOpen(true)} disabled={isDeleting}>
                             {isDeleting ? "Deleting..." : "Delete Account"}
                         </Button>
                     )}
                 </CardFooter>
             </Card>
+
+            <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to permanently delete your account? This action cannot be undone and will remove all your data.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => { e.preventDefault(); handleDeleteAccount(); }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Delete Account
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

@@ -38,6 +38,8 @@ class ResumePipeline:
 
         import logging
         import concurrent.futures
+        import hashlib
+        import re
         
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
@@ -74,6 +76,26 @@ class ResumePipeline:
                     filename=file.filename
                 )
                 logger.info(f"[{file.filename}] Resume parsed. Candidate: {parsed_resume.full_name}")
+
+                # Check for semantic duplicate
+                normalized_text = re.sub(r'\W+', '', parsed_resume.resume_text.lower())
+                content_hash = hashlib.sha256(normalized_text.encode('utf-8')).hexdigest()
+
+                from app.database.connection import SessionLocal
+                from app.database.models import CandidateProfile
+                
+                db = SessionLocal()
+                try:
+                    existing_resume = db.query(CandidateProfile).filter(
+                        CandidateProfile.user_id == user_id, 
+                        CandidateProfile.content_hash == content_hash
+                    ).first()
+                    
+                    if existing_resume:
+                        logger.info(f"[{file.filename}] Skipped duplicate resume based on content hash.")
+                        raise ValueError(f"Skipped duplicate: {file.filename} — this resume already exists in your library.")
+                finally:
+                    db.close()
 
                 # Save original resume locally (optional fallback or for immediate processing)
                 logger.info(f"[{file.filename}] Saving original resume...")
@@ -119,7 +141,7 @@ class ResumePipeline:
 
                 if not chunks:
                     logger.error(f"[{file.filename}] No text could be extracted")
-                    raise ValueError(f"No text could be extracted from {file.filename}")
+                    raise ValueError(f"This resume appears to be blank or contains no readable text. Please upload a valid resume.")
                     
                 # Use deterministic extracted profile
                 logger.info(f"[{file.filename}] Using deterministic profile data...")
@@ -156,7 +178,8 @@ class ResumePipeline:
                         cgpa=ext_cgpa,
                         resume_path=str(saved_path),
                         resume_storage_path=resume_storage_path,
-                        original_filename=file.filename
+                        original_filename=file.filename,
+                        content_hash=content_hash
                     )
                     db.add(db_candidate)
                     db.commit()
@@ -208,7 +231,7 @@ class ResumePipeline:
                 
                 failures.append({
                     "filename": file.filename,
-                    "reason": f"{type(e).__name__}: {str(e)}"
+                    "reason": str(e)
                 })
                 
                 yield {

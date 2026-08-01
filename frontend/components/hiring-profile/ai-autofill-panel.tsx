@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { UploadArea } from "./upload-area";
 import { HiringProfileForm, HiringProfileData } from "./hiring-profile-form";
 
-export function AIAutofillPanel() {
+export function AIAutofillPanel({ onSuccess }: { onSuccess?: () => void }) {
     const [parsedData, setParsedData] = useState<HiringProfileData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [rawText, setRawText] = useState("");
@@ -110,7 +110,7 @@ export function AIAutofillPanel() {
                             Reset
                         </Button>
                     </div>
-                    <HiringProfileForm initialData={parsedData} />
+                    <HiringProfileForm initialData={parsedData} onSuccess={onSuccess} />
                 </>
             )}
         </div>

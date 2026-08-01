@@ -21,6 +21,10 @@ def migrate():
         cursor.execute("ALTER TABLE candidate_profiles ADD COLUMN resume_storage_path VARCHAR;")
         print("Added resume_storage_path column")
         
+    if "content_hash" not in columns:
+        cursor.execute("ALTER TABLE candidate_profiles ADD COLUMN content_hash VARCHAR;")
+        print("Added content_hash column")
+        
     conn.commit()
     conn.close()
     print("Migration complete")

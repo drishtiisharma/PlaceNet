@@ -48,15 +48,15 @@ export const dashboardMenu = [
 export const landingNav = [
     {
         title: "How It Works",
-        href: "#how-it-works",
+        href: "/#how-it-works",
     },
     {
         title: "AI Search",
-        href: "#ai-search",
+        href: "/#ai-search",
     },
     {
         title: "FAQ",
-        href: "#faq",
+        href: "/#faq",
     },
     {
         title: "Contact Us",

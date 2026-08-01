@@ -39,13 +39,23 @@ export function ResumeActions({
 
                 <DropdownMenuItem
                     onClick={async () => {
+                        const newWindow = window.open('about:blank', '_blank');
                         try {
                             const res = await fetchApi(`/resume/view/${resumeId}`);
+                            if (res.status === 401 || res.status === 403) {
+                                newWindow?.close();
+                                return;
+                            }
                             if (!res.ok) throw new Error("Failed to view");
                             const blob = await res.blob();
                             const url = window.URL.createObjectURL(blob);
-                            window.open(url, "_blank");
+                            if (newWindow) {
+                                newWindow.location.href = url;
+                            } else {
+                                window.location.href = url;
+                            }
                         } catch (e) {
+                            newWindow?.close();
                             console.error(e);
                         }
                     }}
@@ -58,6 +68,9 @@ export function ResumeActions({
                     onClick={async () => {
                         try {
                             const res = await fetchApi(`/resume/download/${resumeId}`);
+                            if (res.status === 401 || res.status === 403) {
+                                return;
+                            }
                             if (!res.ok) throw new Error("Failed to download");
                             const blob = await res.blob();
                             const url = window.URL.createObjectURL(blob);

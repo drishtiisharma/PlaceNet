@@ -98,8 +98,11 @@ export function HiringProfileForm({
                 return;
             }
             toast.success(`Hiring Profile ${profileId ? 'updated' : 'saved'} successfully!`);
-            if (onSuccess) onSuccess();
-            router.push("/dashboard/hiring-profile");
+            if (onSuccess) {
+                onSuccess();
+            } else {
+                router.push("/dashboard/hiring-profile");
+            }
         } catch (error) {
             console.error("Error saving profile:", error);
             toast.error("An unexpected error occurred while saving.");

@@ -82,7 +82,7 @@ export default function LandingNavbar() {
         const observerCallback = (entries: IntersectionObserverEntry[]) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    setActiveSection(`#${entry.target.id}`);
+                    setActiveSection(`/#${entry.target.id}`);
                 }
             });
         };
@@ -91,7 +91,11 @@ export default function LandingNavbar() {
         
         // Observe all sections mapped in landingNav
         landingNav.forEach((item) => {
-            if (item.href.startsWith("#")) {
+            if (item.href.startsWith("/#")) {
+                const id = item.href.substring(2);
+                const element = document.getElementById(id);
+                if (element) observer.observe(element);
+            } else if (item.href.startsWith("#")) {
                 const id = item.href.substring(1);
                 const element = document.getElementById(id);
                 if (element) observer.observe(element);

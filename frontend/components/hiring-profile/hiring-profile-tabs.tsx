@@ -11,10 +11,19 @@ import { HiringProfileForm } from "./hiring-profile-form";
 import { AIAutofillPanel } from "./ai-autofill-panel";
 
 import { HiringProfileManager } from "./hiring-profile-manager";
+import { useState } from "react";
 
 export function HiringProfileTabs() {
+    const [activeTab, setActiveTab] = useState("manage");
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const handleSuccess = () => {
+        setActiveTab("manage");
+        setRefreshKey(prev => prev + 1);
+    };
+
     return (
-        <Tabs defaultValue="manage" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 
             <TabsList variant="line">
                 <TabsTrigger value="manage">
@@ -31,15 +40,15 @@ export function HiringProfileTabs() {
             </TabsList>
 
             <TabsContent value="manage" className="mt-6">
-                <HiringProfileManager />
+                <HiringProfileManager key={refreshKey} />
             </TabsContent>
 
             <TabsContent value="manual" className="mt-6">
-                <HiringProfileForm />
+                <HiringProfileForm onSuccess={handleSuccess} />
             </TabsContent>
 
             <TabsContent value="autofill" className="mt-6">
-                <AIAutofillPanel />
+                <AIAutofillPanel onSuccess={handleSuccess} />
             </TabsContent>
 
         </Tabs>
