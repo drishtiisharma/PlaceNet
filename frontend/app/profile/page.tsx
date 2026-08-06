@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle, Camera, Loader2 } from "lucide-react";
+import { UserCircle, Camera, Loader2, Eye, EyeOff } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,6 +30,7 @@ export default function ProfilePage() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [newPassword, setNewPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [originalName, setOriginalName] = useState("");
     const router = useRouter();
 
@@ -173,15 +174,26 @@ export default function ProfilePage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
-                        <Input 
-                            id="password" 
-                            type={isEditing ? "text" : "password"}
-                            value={isEditing ? newPassword : "••••••••••••"}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            readOnly={!isEditing} 
-                            placeholder={isEditing ? "Leave blank to keep current password" : ""}
-                            className={!isEditing ? "bg-muted/50 cursor-default tracking-widest text-lg h-10 py-0" : ""}
-                        />
+                        <div className="relative">
+                            <Input 
+                                id="password" 
+                                type={isEditing ? (showPassword ? "text" : "password") : "password"}
+                                value={isEditing ? newPassword : "••••••••••••"}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                readOnly={!isEditing} 
+                                placeholder={isEditing ? "Leave blank to keep current password" : ""}
+                                className={!isEditing ? "bg-muted/50 cursor-default tracking-widest text-lg h-10 py-0" : "pr-10"}
+                            />
+                            {isEditing && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                >
+                                    {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                </button>
+                            )}
+                        </div>
                         <p className="text-xs text-muted-foreground mt-1">
                             {isEditing ? "Enter a new password to change it, or leave it blank." : "Your password is securely hashed and cannot be displayed."}
                         </p>

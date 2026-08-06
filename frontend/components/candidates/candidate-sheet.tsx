@@ -14,6 +14,8 @@ import { Separator } from "@/components/ui/separator";
 import { RankingResult } from "./candidates-context";
 import { CheckCircle2, Download, ExternalLink, XCircle } from "lucide-react";
 import { cleanCandidateName } from "./columns";
+import { fetchApi } from "@/lib/api";
+import { toast } from "sonner";
 
 // Helper for avatar initials
 function getInitials(name: string) {
@@ -194,11 +196,56 @@ export function CandidateSheet({
                     </div>
 
                     <div className="flex gap-4 pt-4">
-                        <Button className="flex-1 bg-orange-600 hover:bg-orange-700" onClick={() => window.open(`http://127.0.0.1:8000/resume/view/${candidate.resume_id}`, "_blank")}>
+                        <Button className="flex-1 bg-orange-600 hover:bg-orange-700" onClick={async () => {
+                            const toastId = toast.loading("Opening resume...");
+                            const newWindow = window.open('about:blank', '_blank');
+                            try {
+                                const res = await fetchApi(`/resume/view/${candidate.resume_id}`);
+                                if (res.status === 401 || res.status === 403) {
+                                    toast.error("Session expired. Please log in again.", { id: toastId });
+                                    newWindow?.close();
+                                    return;
+                                }
+                                if (!res.ok) throw new Error("Failed to view");
+                                
+                                const blob = await res.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                if (newWindow) {
+                                    newWindow.location.href = url;
+                                } else {
+                                    window.location.href = url;
+                                }
+                                toast.dismiss(toastId);
+                            } catch (error) {
+                                newWindow?.close();
+                                toast.error("Failed to open resume.", { id: toastId });
+                            }
+                        }}>
                             <ExternalLink className="mr-2 h-4 w-4" />
                             View Resume
                         </Button>
-                        <Button variant="outline" className="flex-1">
+                        <Button variant="outline" className="flex-1" onClick={async () => {
+                            const toastId = toast.loading("Downloading resume...");
+                            try {
+                                const res = await fetchApi(`/resume/download/${candidate.resume_id}`);
+                                if (res.status === 401 || res.status === 403) {
+                                    toast.error("Session expired. Please log in again.", { id: toastId });
+                                    return;
+                                }
+                                if (!res.ok) throw new Error("Failed to download");
+                                
+                                const blob = await res.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = `resume-${candidate.resume_id}.pdf`;
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                                toast.dismiss(toastId);
+                            } catch (error) {
+                                toast.error("Failed to download resume.", { id: toastId });
+                            }
+                        }}>
                             <Download className="mr-2 h-4 w-4" />
                             Download Resume
                         </Button>

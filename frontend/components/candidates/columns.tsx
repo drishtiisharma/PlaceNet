@@ -7,6 +7,7 @@ import { CandidateActions } from "./candidate-actions";
 import { RankingResult } from "./candidates-context";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { fetchApi } from "@/lib/api";
 
 export function cleanCandidateName(rawName: string) {
     if (!rawName) return "Unknown Candidate";
@@ -19,7 +20,24 @@ export function cleanCandidateName(rawName: string) {
 
 const ResumeCell = ({ resumeId }: { resumeId: string }) => {
     return (
-        <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground" onClick={() => window.open(`http://127.0.0.1:8000/resume/view/${resumeId}`, "_blank")}>
+        <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground" onClick={async () => {
+            const newWindow = window.open('about:blank', '_blank');
+            try {
+                const res = await fetchApi(`/resume/view/${resumeId}`);
+                if (res.status === 401 || res.status === 403) {
+                    newWindow?.close();
+                    return;
+                }
+                if (!res.ok) throw new Error("Failed to view");
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                if (newWindow) newWindow.location.href = url;
+                else window.location.href = url;
+            } catch (e) {
+                newWindow?.close();
+                console.error(e);
+            }
+        }}>
             <FileText className="h-4 w-4 text-blue-500" />
             View
         </Button>
