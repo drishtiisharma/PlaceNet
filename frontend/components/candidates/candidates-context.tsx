@@ -81,7 +81,7 @@ export function CandidatesProvider({ children }: { children: React.ReactNode }) 
     }, []);
 
     const fetchCandidates = async (pageToFetch = page) => {
-        if (!selectedProfile) return;
+        if (!selectedProfile) return false;
         setIsLoading(true);
         try {
             const res = await fetchApi(`/ranking/${selectedProfile}/results`, {
