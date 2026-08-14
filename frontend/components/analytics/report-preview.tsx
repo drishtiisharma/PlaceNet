@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { FileSpreadsheet } from "lucide-react";
+import { fetchApi } from "@/lib/api";
+import { toast } from "sonner";
 
 import {
     Card,
@@ -17,9 +19,34 @@ import { Button } from "@/components/ui/button";
 export function ReportPreview({ hiringProfiles }: { hiringProfiles: { id: string, title: string }[] }) {
     const [selectedProfile, setSelectedProfile] = useState<string>("");
     
-    const handleExport = () => {
+    const handleExport = async () => {
         if (!selectedProfile) return;
-        window.location.href = `http://127.0.0.1:8000/analytics/export/${selectedProfile}`;
+        
+        const toastId = toast.loading("Generating export...");
+        try {
+            const res = await fetchApi(`/analytics/export/${selectedProfile}`);
+            
+            if (res.status === 401 || res.status === 403) {
+                toast.error("Session expired. Please log in again.", { id: toastId });
+                return;
+            }
+            if (!res.ok) {
+                throw new Error("Failed to export report");
+            }
+            
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `hiring_profile_${selectedProfile}_report.xlsx`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            toast.success("Export downloaded successfully!", { id: toastId });
+        } catch (error) {
+            console.error("Export error:", error);
+            toast.error("Failed to download export.", { id: toastId });
+        }
     };
 
     return (

@@ -147,13 +147,50 @@ class ResumePipeline:
                 logger.info(f"[{file.filename}] Using deterministic profile data...")
                 
                 ext_name = parsed_resume.full_name
+                ext_department = parsed_resume.extracted_department or "General"
+                ext_cgpa = parsed_resume.extracted_cgpa
+                
                 ext_skills = parsed_resume.extracted_skills
                 ext_education = parsed_resume.extracted_education
                 ext_projects = parsed_resume.extracted_projects
                 ext_experience = parsed_resume.extracted_experience
                 ext_certifications = parsed_resume.extracted_certifications
-                ext_department = parsed_resume.extracted_department or "General"
-                ext_cgpa = parsed_resume.extracted_cgpa
+
+                logger.info(f"[{file.filename}] Enhancing profile data with LLM...")
+                try:
+                    from app.ai.client import llm_service
+                    from app.prompts.loader import load_prompt
+                    import json
+                    
+                    prompt = load_prompt(
+                        "resume_extractor.md",
+                        resume_text=parsed_resume.resume_text
+                    )
+                    
+                    response = llm_service.chat_completion(
+                        messages=[{"role": "user", "content": prompt}],
+                        response_format={"type": "json_object"}
+                    )
+                    
+                    content = response.choices[0].message.content
+                    data = json.loads(content)
+                    
+                    if "skills" in data and isinstance(data["skills"], list) and data["skills"]:
+                        ext_skills = list(set(ext_skills + data["skills"]))
+                    
+                    if "education" in data and isinstance(data["education"], list):
+                        ext_education = data["education"]
+                    if "projects" in data and isinstance(data["projects"], list):
+                        ext_projects = data["projects"]
+                    if "experience" in data and isinstance(data["experience"], list):
+                        ext_experience = data["experience"]
+                    if "certifications" in data and isinstance(data["certifications"], list):
+                        ext_certifications = data["certifications"]
+                    
+                    logger.info(f"[{file.filename}] Enhanced profile data successfully")
+                except Exception as e:
+                    logger.warning(f"[{file.filename}] Failed to enhance profile data with LLM, falling back to deterministic extraction: {e}")
+
                 
                 logger.info(f"[{file.filename}] Storing profile to DB for {ext_name}...")
                 from app.database.connection import SessionLocal

@@ -29,11 +29,11 @@ class AnalyticsService:
 
         # Missing Projects & Missing GitHub
         missing_projects_res = db.execute(text(
-            f"SELECT COUNT(*) FROM candidate_profiles WHERE json_array_length(projects) = 0 AND user_id = '{user_id}'"
+            f"SELECT COUNT(*) FROM candidate_profiles WHERE (projects IS NULL OR json_extract(projects, '$') IS NULL OR json_array_length(projects) = 0) AND user_id = '{user_id}' AND full_name IS NOT NULL AND full_name != ''"
         )).scalar()
 
         missing_github_res = db.execute(text(
-            f"SELECT COUNT(*) FROM candidate_profiles WHERE projects NOT LIKE '%github.com%' AND experience NOT LIKE '%github.com%' AND user_id = '{user_id}'"
+            f"SELECT COUNT(*) FROM candidate_profiles WHERE (projects IS NULL OR projects NOT LIKE '%github.com%') AND (experience IS NULL OR experience NOT LIKE '%github.com%') AND user_id = '{user_id}' AND full_name IS NOT NULL AND full_name != ''"
         )).scalar()
         
         # Hiring Profile Analytics (from RankedCandidate)

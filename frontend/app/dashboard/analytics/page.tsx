@@ -10,19 +10,46 @@ import { SkillsCategories } from "@/components/analytics/skills-categories";
 import { HiringProfileAnalytics } from "@/components/analytics/hiring-profile-analytics";
 import { ActionRequired } from "@/components/analytics/action-required";
 import { AIInsights } from "@/components/analytics/ai-insights";
+import { fetchApi } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function AnalyticsPage() {
     const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("http://127.0.0.1:8000/analytics/dashboard")
-            .then(res => res.json())
-            .then(json => setData(json))
-            .catch(err => console.error(err));
+        const loadDashboard = async () => {
+            try {
+                const res = await fetchApi("/analytics/dashboard");
+                if (res.status === 401 || res.status === 403) {
+                    setError("Session expired. Please log in again.");
+                    toast.error("Session expired. Please log in again.");
+                    return;
+                }
+                if (!res.ok) {
+                    throw new Error("Failed to load analytics");
+                }
+                const json = await res.json();
+                setData(json);
+            } catch (err) {
+                console.error(err);
+                setError("Failed to load dashboard analytics");
+                toast.error("Failed to load dashboard analytics");
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        loadDashboard();
     }, []);
 
-    if (!data) {
-        return <div className="flex h-[100vh] items-center justify-center">Loading Analytics...</div>;
+    if (loading) {
+        return <div className="flex h-[100vh] items-center justify-center text-muted-foreground">Loading Analytics...</div>;
+    }
+
+    if (error || !data) {
+        return <div className="flex h-[100vh] items-center justify-center text-red-500">{error || "Failed to load data"}</div>;
     }
 
     return (
